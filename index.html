@@ -32,7 +32,9 @@
 
         .tactical-card {
             background-color: var(--tactical-charcoal);
-            border: 1px solid rgba(75, 83, 32, 0.2);
+            border-width: 1px;
+            border-style: solid;
+            border-color: rgba(75, 83, 32, 0.2);
             border-radius: 0.5rem;
         }
 
@@ -106,6 +108,7 @@
     </style>
     <script>
         window.tailwind.config = {
+            important: true,
             theme: {
                 extend: {
                     colors: {
