@@ -141,27 +141,28 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         
-        window.VANGUARD_DATA = {"logs":[],"completedExercises":{"2-1":false,"2-2":false,"2-0":false},"week":1,"pyramidIndex":0};
+        window.VANGUARD_DATA = {"logs":[],"completedExercises":{"2-1":false,"2-2":false,"2-0":false,"1-0":false},"week":1,"pyramidIndex":2};
 
         // --- Icon Component ---
-        const Icon = ({ name, size = 24, className = "", style = {} }) => {
+        const Icon = ({ name, size = 24, className = "", style = {}, color = "" }) => {
             const iconRef = useRef(null);
             useEffect(() => {
                 if (window.lucide && iconRef.current) {
+                    iconRef.current.innerHTML = `<i data-lucide="${name}"></i>`;
                     window.lucide.createIcons({
+                        root: iconRef.current,
                         attrs: {
                             class: className,
                             'stroke-width': 2,
                             width: size,
                             height: size,
-                            stroke: 'currentColor'
-                        },
-                        nameAttr: 'data-lucide'
+                            stroke: color || 'currentColor'
+                        }
                     });
                 }
-            }, [name, size, className]);
+            }, [name, size, className, color]);
 
-            return <i data-lucide={name} ref={iconRef} className={className} style={style}></i>;
+            return <span key={name} ref={iconRef} className={className} style={style}></span>;
         };
 
         // --- Constants ---
@@ -477,7 +478,7 @@
                 <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden bg-tactical-bg">
                     <header className="p-6 pt-8 flex flex-col gap-1 border-b border-tactical-army/20 bg-tactical-bg/80 backdrop-blur-md sticky top-0 z-50">
                         <div className="flex items-center gap-2">
-                            <Icon name="shield" size={28} style={{ color: '#4B5320' }} className="text-tactical-army" />
+                            <Icon name="shield" size={28} color="#4B5320" className="shrink-0" />
                             <h1 className="text-3xl font-black tracking-tighter uppercase italic">Black Ops</h1>
                         </div>
                         <p className="text-[10px] uppercase tracking-[0.3em] text-tactical-army font-bold">Military Calisthenics Program</p>
@@ -488,7 +489,7 @@
                             <div className="space-y-6 fade-in">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                        <Icon name="target" size={20} style={{ color: '#4B5320' }} className="text-tactical-army" />
+                                        <Icon name="target" size={20} color="#4B5320" className="shrink-0" />
                                         The Mission
                                     </h2>
                                     <span className="text-[10px] bg-tactical-army/20 text-tactical-army px-2 py-1 rounded border border-tactical-army/30 font-bold uppercase">WEEK {week.toString().padStart(2, '0')}</span>
@@ -504,8 +505,8 @@
                                                 <div className="flex-1 p-4 min-w-0">
                                                     <div className="flex justify-between items-start mb-1">
                                                         <h3 className="font-bold text-lg leading-tight">{day.title}</h3>
-                                                        {day.type === 'rest' && <Icon name="activity" size={16} style={{ color: '#4B5320' }} className="text-tactical-army opacity-50" />}
-                                                        {day.type === 'amrap' && <Icon name="timer" size={16} style={{ color: '#991b1b' }} className="text-tactical-red" />}
+                                                        {day.type === 'rest' && <Icon name="activity" size={16} color="#4B5320" className="shrink-0 opacity-50" />}
+                                                        {day.type === 'amrap' && <Icon name="timer" size={16} color="#991b1b" className="shrink-0" />}
                                                     </div>
                                                     <p className="text-tactical-army text-xs font-bold uppercase tracking-wider mb-2">{day.routine}</p>
                                                     <p className="text-sm text-tactical-silver/70 leading-relaxed mb-4">{day.details}</p>
@@ -518,9 +519,9 @@
                                                                 <div key={idx} className="space-y-3">
                                                                     <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5 focus:outline-none">
                                                                         {isCompleted ? (
-                                                                            <Icon name="check-circle-2" size={18} style={{ color: '#828d44' }} className="shrink-0" />
+                                                                            <Icon name="check-circle-2" size={18} color="#828d44" className="shrink-0" />
                                                                         ) : (
-                                                                            <Icon name="circle" size={18} style={{ color: '#4B5320' }} className="shrink-0" />
+                                                                            <Icon name="circle" size={18} color="#4B5320" className="shrink-0" />
                                                                         )}
                                                                         <div className="flex-1 flex items-center justify-between gap-2">
                                                                             <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
@@ -571,7 +572,7 @@
                         {activeTab === 'LOG' && (
                             <div className="space-y-6 fade-in">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <Icon name="clipboard-list" size={20} style={{ color: '#4B5320' }} className="text-tactical-army" />
+                                    <Icon name="clipboard-list" size={20} color="#4B5320" className="shrink-0" />
                                     Log Session
                                 </h2>
                                 <form onSubmit={handleLogSubmit} className="tactical-card p-6 space-y-5">
@@ -601,7 +602,7 @@
 
                                 <div className="space-y-4">
                                     <h3 className="text-xs uppercase tracking-widest font-bold text-tactical-army flex items-center gap-2">
-                                        <Icon name="history" size={14} style={{ color: '#4B5320' }} className="text-tactical-army" />
+                                        <Icon name="history" size={14} color="#4B5320" className="shrink-0" />
                                         Recent mission reports
                                     </h3>
                                     {logs.length === 0 ? (
@@ -636,7 +637,7 @@
                         {activeTab === 'INTELLIGENCE' && (
                             <div className="space-y-6 fade-in">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <Icon name="bar-chart-3" size={20} style={{ color: '#4B5320' }} className="text-tactical-army" />
+                                    <Icon name="bar-chart-3" size={20} color="#4B5320" className="shrink-0" />
                                     Intelligence
                                 </h2>
                                 <div className="tactical-card p-4 h-64">
@@ -653,11 +654,11 @@
                                     <h3 className="text-xs uppercase font-bold text-tactical-army mb-4">Data Management</h3>
                                     <div className="flex gap-3">
                                         <button onClick={exportToCSV} disabled={logs.length === 0} className="flex-1 tactical-button bg-tactical-charcoal border border-tactical-army py-2">
-                                            <Icon name="download" size={16} style={{ color: '#4B5320' }} className="text-tactical-army" />
+                                            <Icon name="download" size={16} color="#4B5320" className="shrink-0" />
                                             Export CSV
                                         </button>
                                         <button onClick={() => setShowClearModal(true)} className="flex-1 tactical-button bg-tactical-red/20 border border-tactical-red/50 py-2 text-tactical-red">
-                                            <Icon name="trash-2" size={16} style={{ color: '#991b1b' }} className="text-tactical-red" />
+                                            <Icon name="trash-2" size={16} color="#991b1b" className="shrink-0" />
                                             Clear Data
                                         </button>
                                     </div>
@@ -671,21 +672,21 @@
                             onClick={() => setActiveTab('MISSION')} 
                             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="dumbbell" size={24} style={activeTab === 'MISSION' ? { color: '#4B5320' } : {}} />
+                            <Icon name="dumbbell" size={24} color={activeTab === 'MISSION' ? '#4B5320' : ''} />
                             <span className="text-[10px] font-black uppercase">Mission</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('LOG')} 
                             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="clipboard-list" size={24} style={activeTab === 'LOG' ? { color: '#4B5320' } : {}} />
+                            <Icon name="clipboard-list" size={24} color={activeTab === 'LOG' ? '#4B5320' : ''} />
                             <span className="text-[10px] font-black uppercase">Log</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('INTELLIGENCE')} 
                             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="bar-chart-3" size={24} style={activeTab === 'INTELLIGENCE' ? { color: '#4B5320' } : {}} />
+                            <Icon name="bar-chart-3" size={24} color={activeTab === 'INTELLIGENCE' ? '#4B5320' : ''} />
                             <span className="text-[10px] font-black uppercase">Intel</span>
                         </button>
                     </nav>
