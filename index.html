@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script type="module" src="/@vite/client"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
@@ -139,6 +137,8 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         
+        window.VANGUARD_DATA = {"logs":[],"completedExercises":{},"week":1,"pyramidIndex":0};
+
         // --- Icon Component ---
         const Icon = ({ name, size = 24, className = "" }) => {
             const iconRef = useRef(null);
@@ -303,14 +303,23 @@
             const chartInstance = useRef(null);
 
             useEffect(() => {
-                const savedLogs = localStorage.getItem('blackops_logs');
-                if (savedLogs) setLogs(JSON.parse(savedLogs));
-                const savedCompleted = localStorage.getItem('blackops_completed');
-                if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted));
-                const savedWeek = localStorage.getItem('blackops_week');
-                if (savedWeek) setWeek(parseInt(savedWeek));
-                const savedPyramid = localStorage.getItem('blackops_pyramid_index');
-                if (savedPyramid) setPyramidIndex(parseInt(savedPyramid));
+                // Load injected data if available
+                if (window.VANGUARD_DATA) {
+                    const { logs: iLogs, completedExercises: iCompleted, week: iWeek, pyramidIndex: iPyramid } = window.VANGUARD_DATA;
+                    if (iLogs) setLogs(iLogs);
+                    if (iCompleted) setCompletedExercises(iCompleted);
+                    if (iWeek) setWeek(iWeek);
+                    if (iPyramid) setPyramidIndex(iPyramid);
+                } else {
+                    const savedLogs = localStorage.getItem('blackops_logs');
+                    if (savedLogs) setLogs(JSON.parse(savedLogs));
+                    const savedCompleted = localStorage.getItem('blackops_completed');
+                    if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted));
+                    const savedWeek = localStorage.getItem('blackops_week');
+                    if (savedWeek) setWeek(parseInt(savedWeek));
+                    const savedPyramid = localStorage.getItem('blackops_pyramid_index');
+                    if (savedPyramid) setPyramidIndex(parseInt(savedPyramid));
+                }
             }, []);
 
             useEffect(() => { localStorage.setItem('blackops_logs', JSON.stringify(logs)); }, [logs]);
