@@ -96,6 +96,15 @@
             0%, 100% { opacity: 1; }
             50% { opacity: .5; }
         }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script>
         tailwind.config = {
@@ -149,14 +158,6 @@
 
             return <i data-lucide={name} ref={iconRef} className={className}></i>;
         };
-
-        // --- Mock Motion ---
-        const motion = {
-            div: ({ children, className, style, ...props }) => <div className={className} style={style} {...props}>{children}</div>,
-            span: ({ children, className, style, ...props }) => <span className={className} style={style} {...props}>{children}</span>,
-            button: ({ children, className, style, ...props }) => <button className={className} style={style} {...props}>{children}</button>
-        };
-        const AnimatePresence = ({ children }) => <>{children}</>;
 
         // --- Constants ---
         const PYRAMID_SEQUENCE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -409,7 +410,13 @@
                 e.preventDefault();
                 if (!pushups || !squats || !plankMin || !plankSec) return;
                 const totalPlankSeconds = parseInt(plankMin) * 60 + parseInt(plankSec);
-                const newLog = { id: Date.now().toString(), date: logDate, pushups: parseInt(pushups), squats: parseInt(squats), plankSeconds: totalPlankSeconds };
+                const newLog = { 
+                    id: Date.now().toString(), 
+                    date: logDate, 
+                    pushups: parseInt(pushups), 
+                    squats: parseInt(squats), 
+                    plankSeconds: totalPlankSeconds 
+                };
                 setLogs(prev => [...prev, newLog].sort((a, b) => a.date.localeCompare(b.date)));
                 setPushups(''); setSquats(''); setPlankMin(''); setPlankSec('');
                 setActiveTab('INTELLIGENCE');
@@ -447,6 +454,11 @@
                 link.click();
             };
 
+            const terminateLog = (id) => {
+                setLogs(prev => prev.filter(l => l.id !== id));
+                setLogToDelete(null);
+            };
+
             return (
                 <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden bg-tactical-bg">
                     <header className="p-6 pt-8 flex flex-col gap-1 border-b border-tactical-army/20 bg-tactical-bg/80 backdrop-blur-md sticky top-0 z-50">
@@ -459,7 +471,7 @@
 
                     <main className="flex-1 p-6 pb-32 overflow-y-auto">
                         {activeTab === 'MISSION' && (
-                            <div className="space-y-6">
+                            <div className="space-y-6 fade-in">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-xl font-black uppercase flex items-center gap-2">
                                         <Icon name="target" size={20} className="text-tactical-army" />
@@ -478,6 +490,8 @@
                                                 <div className="flex-1 p-4 min-w-0">
                                                     <div className="flex justify-between items-start mb-1">
                                                         <h3 className="font-bold text-lg leading-tight">{day.title}</h3>
+                                                        {day.type === 'rest' && <Icon name="activity" size={16} className="text-tactical-army opacity-50" />}
+                                                        {day.type === 'amrap' && <Icon name="timer" size={16} className="text-tactical-red" />}
                                                     </div>
                                                     <p className="text-tactical-army text-xs font-bold uppercase tracking-wider mb-2">{day.routine}</p>
                                                     <p className="text-sm text-tactical-silver/70 leading-relaxed mb-4">{day.details}</p>
@@ -490,7 +504,14 @@
                                                                 <div key={idx} className="space-y-3">
                                                                     <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5">
                                                                         {isCompleted ? <Icon name="check-circle-2" size={18} className="text-tactical-army shrink-0" /> : <Icon name="circle" size={18} className="text-tactical-army/30 shrink-0 group-hover:text-tactical-army/60" />}
-                                                                        <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
+                                                                        <div className="flex-1 flex items-center justify-between gap-2">
+                                                                            <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
+                                                                            {isCompleted && (
+                                                                                <span className="text-[7px] font-black uppercase tracking-tighter text-tactical-army border-2 border-tactical-army px-1 py-0.5 rounded shrink-0 whitespace-nowrap bg-tactical-army/5 -rotate-12">
+                                                                                    Objective complete
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
                                                                     </button>
                                                                     {isPyramid && !isCompleted && (
                                                                         <div className="ml-7 space-y-3 border-l border-tactical-army/10 pl-4">
@@ -505,6 +526,12 @@
                                                             );
                                                         })}
                                                     </div>
+                                                    {day.type === 'pyramid' && (
+                                                        <div className="mt-2 text-[10px] text-tactical-army/40 font-bold uppercase tracking-widest flex justify-between">
+                                                            <span>Progress: {pyramidIndex + 1} / {PYRAMID_SEQUENCE.length}</span>
+                                                            <span>Peak: 10 Reps</span>
+                                                        </div>
+                                                    )}
                                                     {day.type === 'amrap' && <AMRAPTimer />}
                                                 </div>
                                             </div>
@@ -519,7 +546,7 @@
                         )}
 
                         {activeTab === 'LOG' && (
-                            <div className="space-y-6">
+                            <div className="space-y-6 fade-in">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
                                     <Icon name="clipboard-list" size={20} className="text-tactical-army" />
                                     Log Session
@@ -535,7 +562,7 @@
                                             <input type="number" placeholder="Max Reps" value={pushups} onChange={(e) => setPushups(e.target.value)} className="tactical-input" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Squats</label>
+                                            <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Air Squats</label>
                                             <input type="number" placeholder="Max Reps" value={squats} onChange={(e) => setSquats(e.target.value)} className="tactical-input" />
                                         </div>
                                     </div>
@@ -546,13 +573,45 @@
                                             <input type="number" placeholder="Sec" value={plankSec} onChange={(e) => setPlankSec(e.target.value)} className="tactical-input text-center" />
                                         </div>
                                     </div>
-                                    <button type="submit" className="tactical-button w-full py-4">Submit report</button>
+                                    <button type="submit" className="tactical-button w-full py-4">Submit mission report</button>
                                 </form>
+
+                                <div className="space-y-4">
+                                    <h3 className="text-xs uppercase tracking-widest font-bold text-tactical-army flex items-center gap-2">
+                                        <Icon name="history" size={14} />
+                                        Recent mission reports
+                                    </h3>
+                                    {logs.length === 0 ? (
+                                        <div className="text-center py-8 text-tactical-silver/30 italic text-sm border-2 border-dashed border-tactical-army/10 rounded-lg">
+                                            No data recorded. Complete your first Saturday Diagnostic.
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {logs.slice().reverse().map(log => (
+                                                <div key={log.id} className="tactical-card p-3 flex justify-between items-center text-sm group">
+                                                    <div className="flex-1">
+                                                        <p className="font-bold text-lg">{new Date(log.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                                        <p className="text-[15px] text-tactical-army font-bold uppercase">
+                                                            P: {log.pushups} | S: {log.squats} | PL: {Math.floor(log.plankSeconds / 60)}:{(log.plankSeconds % 60).toString().padStart(2, '0')}
+                                                        </p>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => setLogToDelete(log.id)}
+                                                        className="p-3 text-tactical-red/80 hover:text-tactical-red transition-colors flex flex-col items-center gap-1"
+                                                    >
+                                                        <Icon name="trash-2" size={24} />
+                                                        <span className="text-[12px] font-black uppercase tracking-tighter">Terminate</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 
                         {activeTab === 'INTELLIGENCE' && (
-                            <div className="space-y-6">
+                            <div className="space-y-6 fade-in">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
                                     <Icon name="bar-chart-3" size={20} className="text-tactical-army" />
                                     Intelligence
@@ -621,6 +680,19 @@
                                 <div className="flex flex-col gap-3">
                                     <button onClick={completeMission} className="tactical-button py-3">Advance</button>
                                     <button onClick={() => setShowIncompleteModal(false)} className="text-xs uppercase font-bold text-tactical-silver/40">Return</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {logToDelete && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-tactical-bg/90 backdrop-blur-sm">
+                            <div className="tactical-card p-8 max-w-xs w-full border-tactical-red/50 text-center space-y-6">
+                                <h3 className="text-xl font-black uppercase text-tactical-red tracking-tighter">Terminate Entry</h3>
+                                <p className="text-sm text-tactical-silver/60">Redact this mission record?</p>
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={() => terminateLog(logToDelete)} className="tactical-button bg-tactical-red py-3">Confirm Termination</button>
+                                    <button onClick={() => setLogToDelete(null)} className="text-xs uppercase font-bold text-tactical-silver/40">Cancel</button>
                                 </div>
                             </div>
                         </div>
