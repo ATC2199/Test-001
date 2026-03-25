@@ -488,7 +488,7 @@
                             <div className="space-y-6 fade-in">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                        <Icon name="target" size={20} className="text-tactical-army" />
+                                        <Icon name="target" size={20} style={{ color: '#4B5320' }} className="text-tactical-army" />
                                         The Mission
                                     </h2>
                                     <span className="text-[10px] bg-tactical-army/20 text-tactical-army px-2 py-1 rounded border border-tactical-army/30 font-bold uppercase">WEEK {week.toString().padStart(2, '0')}</span>
@@ -504,8 +504,8 @@
                                                 <div className="flex-1 p-4 min-w-0">
                                                     <div className="flex justify-between items-start mb-1">
                                                         <h3 className="font-bold text-lg leading-tight">{day.title}</h3>
-                                                        {day.type === 'rest' && <Icon name="activity" size={16} className="text-tactical-army opacity-50" />}
-                                                        {day.type === 'amrap' && <Icon name="timer" size={16} className="text-tactical-red" />}
+                                                        {day.type === 'rest' && <Icon name="activity" size={16} style={{ color: '#4B5320' }} className="text-tactical-army opacity-50" />}
+                                                        {day.type === 'amrap' && <Icon name="timer" size={16} style={{ color: '#991b1b' }} className="text-tactical-red" />}
                                                     </div>
                                                     <p className="text-tactical-army text-xs font-bold uppercase tracking-wider mb-2">{day.routine}</p>
                                                     <p className="text-sm text-tactical-silver/70 leading-relaxed mb-4">{day.details}</p>
@@ -517,7 +517,7 @@
                                                             return (
                                                                 <div key={idx} className="space-y-3">
                                                                     <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5">
-                                                                        {isCompleted ? <Icon name="check-circle-2" size={18} className="text-tactical-army shrink-0" /> : <Icon name="circle" size={18} className="text-tactical-army/30 shrink-0 group-hover:text-tactical-army/60" />}
+                                                                        {isCompleted ? <Icon name="check-circle-2" size={18} style={{ color: '#4B5320' }} className="text-tactical-army shrink-0" /> : <Icon name="circle" size={18} className="text-tactical-army/30 shrink-0 group-hover:text-tactical-army/60" />}
                                                                         <div className="flex-1 flex items-center justify-between gap-2">
                                                                             <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
                                                                             {isCompleted && (
@@ -567,7 +567,7 @@
                         {activeTab === 'LOG' && (
                             <div className="space-y-6 fade-in">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <Icon name="clipboard-list" size={20} className="text-tactical-army" />
+                                    <Icon name="clipboard-list" size={20} style={{ color: '#4B5320' }} className="text-tactical-army" />
                                     Log Session
                                 </h2>
                                 <form onSubmit={handleLogSubmit} className="tactical-card p-6 space-y-5">
@@ -597,7 +597,7 @@
 
                                 <div className="space-y-4">
                                     <h3 className="text-xs uppercase tracking-widest font-bold text-tactical-army flex items-center gap-2">
-                                        <Icon name="history" size={14} className="text-tactical-army" />
+                                        <Icon name="history" size={14} style={{ color: '#4B5320' }} className="text-tactical-army" />
                                         Recent mission reports
                                     </h3>
                                     {logs.length === 0 ? (
@@ -632,7 +632,7 @@
                         {activeTab === 'INTELLIGENCE' && (
                             <div className="space-y-6 fade-in">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <Icon name="bar-chart-3" size={20} className="text-tactical-army" />
+                                    <Icon name="bar-chart-3" size={20} style={{ color: '#4B5320' }} className="text-tactical-army" />
                                     Intelligence
                                 </h2>
                                 <div className="tactical-card p-4 h-64">
@@ -649,11 +649,11 @@
                                     <h3 className="text-xs uppercase font-bold text-tactical-army mb-4">Data Management</h3>
                                     <div className="flex gap-3">
                                         <button onClick={exportToCSV} disabled={logs.length === 0} className="flex-1 tactical-button bg-tactical-charcoal border border-tactical-army py-2">
-                                            <Icon name="download" size={16} className="text-tactical-army" />
+                                            <Icon name="download" size={16} style={{ color: '#4B5320' }} className="text-tactical-army" />
                                             Export CSV
                                         </button>
                                         <button onClick={() => setShowClearModal(true)} className="flex-1 tactical-button bg-tactical-red/20 border border-tactical-red/50 py-2 text-tactical-red">
-                                            <Icon name="trash-2" size={16} className="text-tactical-red" />
+                                            <Icon name="trash-2" size={16} style={{ color: '#991b1b' }} className="text-tactical-red" />
                                             Clear Data
                                         </button>
                                     </div>
@@ -667,21 +667,21 @@
                             onClick={() => setActiveTab('MISSION')} 
                             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="dumbbell" size={24} />
+                            <Icon name="dumbbell" size={24} style={activeTab === 'MISSION' ? { color: '#4B5320' } : {}} />
                             <span className="text-[10px] font-black uppercase">Mission</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('LOG')} 
                             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="clipboard-list" size={24} />
+                            <Icon name="clipboard-list" size={24} style={activeTab === 'LOG' ? { color: '#4B5320' } : {}} />
                             <span className="text-[10px] font-black uppercase">Log</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('INTELLIGENCE')} 
                             className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="bar-chart-3" size={24} />
+                            <Icon name="bar-chart-3" size={24} style={activeTab === 'INTELLIGENCE' ? { color: '#4B5320' } : {}} />
                             <span className="text-[10px] font-black uppercase">Intel</span>
                         </button>
                     </nav>
