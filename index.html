@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VANGUARD - Tactical Fitness Tracker (Standalone)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,78 +22,74 @@
             background-color: var(--tactical-bg);
             color: var(--tactical-silver);
             font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
         }
         .font-tactical { font-family: 'Space Grotesk', sans-serif; }
     </style>
 <script src="/_aistudio-iframe.js"></script></head>
-<body class="p-4 max-w-2xl mx-auto">
-    <header class="border-b border-tactical-army pb-4 mb-6">
-        <h1 class="text-3xl font-tactical font-black text-tactical-army tracking-tighter">VANGUARD <span class="text-tactical-silver">OFFLINE</span></h1>
-        <p class="text-xs text-tactical-army font-bold">TACTICAL DATA EXPORT</p>
-    </header>
+<body>
+    <div id="root"></div>
 
-    <div id="data-container">
-        <p class="animate-pulse">Decrypting data package...</p>
-    </div>
-
-    <script>
+    <script type="text/babel">
         window.VANGUARD_DATA = {"logs":[],"completedExercises":{},"week":1,"pyramidIndex":0};
         
-        window.onload = () => {
-            const container = document.getElementById('data-container');
-            if (!window.VANGUARD_DATA) {
-                container.innerHTML = '<p class="text-tactical-red">ERROR: NO DATA INJECTED</p>';
-                return;
-            }
+        const { useState, useEffect, useMemo } = React;
 
-            const { logs, week, pyramidIndex } = window.VANGUARD_DATA;
-            
-            let html = `
-                <div class="space-y-6">
-                    <section class="bg-[#1a1a1a] p-4 border-l-4 border-tactical-army">
-                        <h2 class="text-tactical-army font-bold uppercase text-sm mb-2">Mission Status</h2>
-                        <p>Current Week: <span class="text-tactical-gold font-bold">${week}</span></p>
-                        <p>Pyramid Progress: <span class="text-tactical-gold font-bold">${pyramidIndex + 1}</span></p>
-                    </section>
+        function App() {
+            const data = window.VANGUARD_DATA || { logs: [], week: 1, pyramidIndex: 0 };
+            const [logs] = useState(data.logs);
+            const [week] = useState(data.week);
+            const [pyramidIndex] = useState(data.pyramidIndex);
 
-                    <section>
-                        <h2 class="text-tactical-army font-bold uppercase text-sm mb-4">Mission Reports (${logs.length})</h2>
-                        <div class="space-y-3">
-            `;
+            return (
+                <div className="min-h-screen p-4 max-w-md mx-auto">
+                    <header className="border-b border-[#4B5320] pb-4 mb-6">
+                        <h1 className="text-3xl font-tactical font-black text-[#4B5320] tracking-tighter">VANGUARD <span className="text-[#D3D3D3]">OFFLINE</span></h1>
+                        <p className="text-xs text-[#4B5320] font-bold">TACTICAL DATA EXPORT</p>
+                    </header>
 
-            logs.slice().reverse().forEach(log => {
-                html += `
-                    <div class="bg-[#1a1a1a] p-3 border border-tactical-army/30 rounded">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-tactical-gold font-mono text-xs">${log.date}</span>
-                            <span class="bg-tactical-army/20 text-tactical-army text-[10px] px-2 py-0.5 rounded font-bold uppercase">Verified</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2 text-center">
-                            <div>
-                                <div class="text-[10px] text-tactical-army uppercase font-bold">Pushups</div>
-                                <div class="text-lg font-tactical font-bold">${log.pushups}</div>
+                    <div className="space-y-6">
+                        <section className="bg-[#1a1a1a] p-4 border-l-4 border-[#4B5320]">
+                            <h2 className="text-[#4B5320] font-bold uppercase text-sm mb-2">Mission Status</h2>
+                            <p>Current Week: <span className="text-[#C5A059] font-bold">{week}</span></p>
+                            <p>Pyramid Progress: <span className="text-[#C5A059] font-bold">{pyramidIndex + 1}</span></p>
+                        </section>
+
+                        <section>
+                            <h2 className="text-[#4B5320] font-bold uppercase text-sm mb-4">Mission Reports ({logs.length})</h2>
+                            <div className="space-y-3">
+                                {logs.slice().reverse().map((log, i) => (
+                                    <div key={i} className="bg-[#1a1a1a] p-3 border border-[#4B5320]/30 rounded">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="text-[#C5A059] font-mono text-xs">{log.date}</span>
+                                            <span className="bg-[#4B5320]/20 text-[#4B5320] text-[10px] px-2 py-0.5 rounded font-bold uppercase">Verified</span>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2 text-center">
+                                            <div>
+                                                <div className="text-[10px] text-[#4B5320] uppercase font-bold">Pushups</div>
+                                                <div className="text-lg font-tactical font-bold">{log.pushups}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-[#4B5320] uppercase font-bold">Squats</div>
+                                                <div className="text-lg font-tactical font-bold">{log.squats}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] text-[#4B5320] uppercase font-bold">Plank</div>
+                                                <div className="text-lg font-tactical font-bold">{Math.floor(log.plankTime / 60)}m {log.plankTime % 60}s</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            <div>
-                                <div class="text-[10px] text-tactical-army uppercase font-bold">Squats</div>
-                                <div class="text-lg font-tactical font-bold">${log.squats}</div>
-                            </div>
-                            <div>
-                                <div class="text-[10px] text-tactical-army uppercase font-bold">Plank</div>
-                                <div class="text-lg font-tactical font-bold">${Math.floor(log.plankTime / 60)}m ${log.plankTime % 60}s</div>
-                            </div>
-                        </div>
+                        </section>
                     </div>
-                `;
-            });
-
-            html += `
-                        </div>
-                    </section>
                 </div>
-            `;
+            );
+        }
 
-            container.innerHTML = html;
-        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
