@@ -3,718 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Black Ops: Military Calisthenics</title>
-    <!-- Tailwind CSS -->
+    <title>VANGUARD - Tactical Fitness Tracker (Standalone)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --tactical-bg: #0A0A0A;
+            --tactical-bg: #121212;
             --tactical-army: #4B5320;
-            --tactical-charcoal: #1E1E1E;
+            --tactical-gold: #C5A059;
             --tactical-silver: #D3D3D3;
             --tactical-red: #991b1b;
         }
-
         body {
             background-color: var(--tactical-bg);
             color: var(--tactical-silver);
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
         }
-
-        .font-mono {
-            font-family: 'Space Grotesk', monospace;
-        }
-
-        .tactical-card {
-            background-color: var(--tactical-charcoal);
-            border: 1px solid rgba(75, 83, 32, 0.2);
-            border-radius: 0.5rem;
-        }
-
-        .tactical-button {
-            background-color: var(--tactical-army);
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            border-radius: 0.25rem;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .tactical-button:hover:not(:disabled) {
-            background-color: #5d6628;
-            transform: translateY(-1px);
-        }
-
-        .tactical-button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .tactical-input {
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(75, 83, 32, 0.3);
-            color: white;
-            padding: 0.75rem;
-            border-radius: 0.25rem;
-            width: 100%;
-        }
-
-        .tactical-input:focus {
-            outline: none;
-            border-color: var(--tactical-army);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--tactical-bg);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--tactical-army);
-            border-radius: 10px;
-        }
-
-        .animate-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .font-tactical { font-family: 'Space Grotesk', sans-serif; }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'tactical-bg': '#0A0A0A',
-                        'tactical-army': '#4B5320',
-                        'tactical-charcoal': '#1E1E1E',
-                        'tactical-silver': '#D3D3D3',
-                        'tactical-red': '#991b1b',
-                    }
-                }
-            }
-        }
-    </script>
 <script src="/_aistudio-iframe.js"></script></head>
-<body>
-    <div id="root"></div>
+<body class="p-4 max-w-2xl mx-auto">
+    <header class="border-b border-tactical-army pb-4 mb-6">
+        <h1 class="text-3xl font-tactical font-black text-tactical-army tracking-tighter">VANGUARD <span class="text-tactical-silver">OFFLINE</span></h1>
+        <p class="text-xs text-tactical-army font-bold">TACTICAL DATA EXPORT</p>
+    </header>
 
-    <!-- React and Babel -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div id="data-container">
+        <p class="animate-pulse">Decrypting data package...</p>
+    </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
+    <script>
+        window.VANGUARD_DATA = {"logs":[],"completedExercises":{},"week":1,"pyramidIndex":0};
         
-        // --- Icon Component ---
-        const Icon = ({ name, size = 24, className = "", color = "#4B5320" }) => {
-            const iconRef = useRef(null);
+        window.onload = () => {
+            const container = document.getElementById('data-container');
+            if (!window.VANGUARD_DATA) {
+                container.innerHTML = '<p class="text-tactical-red">ERROR: NO DATA INJECTED</p>';
+                return;
+            }
+
+            const { logs, week, pyramidIndex } = window.VANGUARD_DATA;
             
-            useEffect(() => {
-                if (window.lucide && iconRef.current) {
-                    // Clear previous content
-                    iconRef.current.innerHTML = '';
-                    
-                    // Convert kebab-case to PascalCase for Lucide icons
-                    const pascalName = name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
-                    const icon = window.lucide.icons[pascalName];
-                    
-                    if (icon) {
-                        const svg = icon.toSvg({
-                            class: className,
-                            'stroke-width': 2,
-                            width: size,
-                            height: size,
-                            stroke: color
-                        });
-                        iconRef.current.innerHTML = svg;
-                    }
-                }
-            }, [name, size, className, color]);
+            let html = `
+                <div class="space-y-6">
+                    <section class="bg-[#1a1a1a] p-4 border-l-4 border-tactical-army">
+                        <h2 class="text-tactical-army font-bold uppercase text-sm mb-2">Mission Status</h2>
+                        <p>Current Week: <span class="text-tactical-gold font-bold">${week}</span></p>
+                        <p>Pyramid Progress: <span class="text-tactical-gold font-bold">${pyramidIndex + 1}</span></p>
+                    </section>
 
-            return <span ref={iconRef} className="inline-flex items-center justify-center"></span>;
-        };
+                    <section>
+                        <h2 class="text-tactical-army font-bold uppercase text-sm mb-4">Mission Reports (${logs.length})</h2>
+                        <div class="space-y-3">
+            `;
 
-        // --- Constants ---
-        const PYRAMID_SEQUENCE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-        const WORKOUT_SCHEDULE = [
-            { day: 1, title: "Upper Body Push", routine: "1-10-1 Push-up Pyramid", details: "1 rep, rest 5s; 2 reps, rest 10s... up to 10, then back down.", exercises: ["Push-up Pyramid (1-10-1)"], type: "pyramid" },
-            { day: 2, title: "Lower Body", routine: "5 Rounds", details: "20 Air Squats, 10 Lunges (each leg), 30 Jumping Jacks.", exercises: ["20 Air Squats", "10 Lunges (each leg)", "30 Jumping Jacks"], type: "rounds" },
-            { day: 3, title: "Active Recovery", routine: "30-min Brisk Walk", details: "World's Greatest Stretch (5 mins).", exercises: ["30-min Brisk Walk", "World's Greatest Stretch"], type: "recovery" },
-            { day: 4, title: "Full Body Smoker", routine: "15-Minute AMRAP", details: "10 Burpees, 20 Mountain Climbers, 15 Sit-ups.", exercises: ["10 Burpees", "20 Mountain Climbers", "15 Sit-ups"], type: "amrap" },
-            { day: 5, title: "Core Stability", routine: "4 Rounds", details: "15 Leg Raises, 20 Russian Twists, 15 Bird-Dogs.", exercises: ["15 Leg Raises", "20 Russian Twists", "15 Bird-Dogs"], type: "rounds" },
-            { day: 6, title: "Saturday Diagnostic", routine: "The Test", details: "Max Push-ups (2m), Max Air Squats (2m), Max Plank Hold.", exercises: ["Max Push-ups (2 min)", "Max Air Squats (2 min)", "Max Plank Hold"], type: "test" },
-            { day: 7, title: "R & R", routine: "Full Recovery", details: "Hydrate, foam roll, and prepare for next week.", exercises: ["Hydrate", "Foam Roll", "Prepare for next week"], type: "rest" }
-        ];
-
-        // --- Components ---
-        const RestTimer = ({ initialSeconds, onComplete, autoStart = false }) => {
-            const [seconds, setSeconds] = useState(initialSeconds);
-            const [isActive, setIsActive] = useState(autoStart);
-            const alarmRef = useRef(null);
-
-            useEffect(() => {
-                alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            }, []);
-
-            useEffect(() => {
-                setSeconds(initialSeconds);
-                if (autoStart) setIsActive(true);
-            }, [initialSeconds, autoStart]);
-
-            useEffect(() => {
-                let interval = null;
-                if (isActive && seconds > 0) {
-                    interval = setInterval(() => {
-                        setSeconds((s) => s - 1);
-                    }, 1000);
-                } else if (seconds === 0 && isActive) {
-                    setIsActive(false);
-                    if (alarmRef.current) {
-                        alarmRef.current.play().catch(e => console.error("Audio play failed", e));
-                    }
-                    if (onComplete) onComplete();
-                }
-                return () => clearInterval(interval);
-            }, [isActive, seconds, onComplete]);
-
-            return (
-                <div className="flex items-center gap-2 bg-tactical-bg p-2 rounded-lg border border-tactical-army/30">
-                    <div className={`text-xl font-mono font-bold w-16 ${seconds === 0 ? 'text-tactical-red animate-pulse' : 'text-tactical-army'}`}>
-                        {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
+            logs.slice().reverse().forEach(log => {
+                html += `
+                    <div class="bg-[#1a1a1a] p-3 border border-tactical-army/30 rounded">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-tactical-gold font-mono text-xs">${log.date}</span>
+                            <span class="bg-tactical-army/20 text-tactical-army text-[10px] px-2 py-0.5 rounded font-bold uppercase">Verified</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                                <div class="text-[10px] text-tactical-army uppercase font-bold">Pushups</div>
+                                <div class="text-lg font-tactical font-bold">${log.pushups}</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-tactical-army uppercase font-bold">Squats</div>
+                                <div class="text-lg font-tactical font-bold">${log.squats}</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-tactical-army uppercase font-bold">Plank</div>
+                                <div class="text-lg font-tactical font-bold">${Math.floor(log.plankTime / 60)}m ${log.plankTime % 60}s</div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex-1 flex items-center gap-1">
-                        <button 
-                            onClick={() => {
-                                if (isActive) setSeconds(0);
-                                else setIsActive(true);
-                            }}
-                            disabled={seconds === 0}
-                            className="tactical-button py-1 px-2 disabled:opacity-50 text-[10px]"
-                        >
-                            {isActive ? "I don't need rest" : 'Start Rest'}
-                        </button>
-                        <button 
-                            onClick={() => { setSeconds(initialSeconds); setIsActive(false); }}
-                            className="p-1 text-tactical-silver/50 hover:text-tactical-silver"
-                        >
-                            <Icon name="rotate-ccw" size={14} color="#D3D3D3" />
-                        </button>
-                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+                    </section>
                 </div>
-            );
+            `;
+
+            container.innerHTML = html;
         };
-
-        const AMRAPTimer = () => {
-            const [timeLeft, setTimeLeft] = useState(15 * 60);
-            const [isActive, setIsActive] = useState(false);
-
-            useEffect(() => {
-                let interval = null;
-                if (isActive && timeLeft > 0) {
-                    interval = setInterval(() => {
-                        setTimeLeft((t) => t - 1);
-                    }, 1000);
-                } else if (timeLeft === 0) {
-                    setIsActive(false);
-                    clearInterval(interval);
-                }
-                return () => clearInterval(interval);
-            }, [isActive, timeLeft]);
-
-            const formatTime = (seconds) => {
-                const m = Math.floor(seconds / 60);
-                const s = seconds % 60;
-                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            };
-
-            return (
-                <div className="flex flex-col gap-2 bg-tactical-bg p-4 rounded-lg border border-tactical-army/30">
-                    <div className="flex justify-between items-center">
-                        <span className="text-xs uppercase tracking-widest text-tactical-army font-bold">AMRAP Countdown</span>
-                        <Icon name="timer" size={16} color="#4B5320" />
-                    </div>
-                    <div className="text-4xl font-mono text-center py-2 font-black tracking-tighter">
-                        {formatTime(timeLeft)}
-                    </div>
-                    <div className="flex gap-2">
-                        <button 
-                            onClick={() => setIsActive(!isActive)}
-                            className="flex-1 tactical-button py-3 text-white"
-                        >
-                            <Icon name={isActive ? "pause" : "play"} size={16} color="#FFFFFF" />
-                            {isActive ? 'Pause' : 'Start Mission'}
-                        </button>
-                        <button 
-                            onClick={() => { setTimeLeft(15 * 60); setIsActive(false); }}
-                            className="p-2 bg-tactical-charcoal border border-tactical-army/30 rounded hover:bg-tactical-army/20"
-                        >
-                            <Icon name="rotate-ccw" size={20} color="#FFFFFF" />
-                        </button>
-                    </div>
-                </div>
-            );
-        };
-
-        function App() {
-            const [activeTab, setActiveTab] = useState('MISSION');
-            const [logs, setLogs] = useState([]);
-            const [completedExercises, setCompletedExercises] = useState({});
-            const [week, setWeek] = useState(1);
-            const [pyramidIndex, setPyramidIndex] = useState(0);
-            const [isPyramidResting, setIsPyramidResting] = useState(false);
-            
-            const [showClearModal, setShowClearModal] = useState(false);
-            const [showIncompleteModal, setShowIncompleteModal] = useState(false);
-            const [logToDelete, setLogToDelete] = useState(null);
-            
-            const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0]);
-            const [pushups, setPushups] = useState('');
-            const [squats, setSquats] = useState('');
-            const [plankMin, setPlankMin] = useState('');
-            const [plankSec, setPlankSec] = useState('');
-
-            const chartRef = useRef(null);
-            const chartInstance = useRef(null);
-
-            useEffect(() => {
-                const savedLogs = localStorage.getItem('blackops_logs');
-                if (savedLogs) setLogs(JSON.parse(savedLogs));
-                const savedCompleted = localStorage.getItem('blackops_completed');
-                if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted));
-                const savedWeek = localStorage.getItem('blackops_week');
-                if (savedWeek) setWeek(parseInt(savedWeek));
-                const savedPyramid = localStorage.getItem('blackops_pyramid_index');
-                if (savedPyramid) setPyramidIndex(parseInt(savedPyramid));
-            }, []);
-
-            useEffect(() => { localStorage.setItem('blackops_logs', JSON.stringify(logs)); }, [logs]);
-            useEffect(() => { localStorage.setItem('blackops_completed', JSON.stringify(completedExercises)); }, [completedExercises]);
-            useEffect(() => { localStorage.setItem('blackops_week', week.toString()); }, [week]);
-            useEffect(() => { localStorage.setItem('blackops_pyramid_index', pyramidIndex.toString()); }, [pyramidIndex]);
-
-            // Chart rendering
-            useEffect(() => {
-                if (activeTab === 'INTELLIGENCE' && chartRef.current && logs.length >= 2) {
-                    if (chartInstance.current) chartInstance.current.destroy();
-                    
-                    const ctx = chartRef.current.getContext('2d');
-                    chartInstance.current = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: logs.map(l => {
-                                const d = new Date(l.date);
-                                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                            }),
-                            datasets: [
-                                {
-                                    label: 'Push-ups',
-                                    data: logs.map(l => l.pushups),
-                                    borderColor: '#4B5320',
-                                    backgroundColor: 'rgba(75, 83, 32, 0.2)',
-                                    fill: true,
-                                    tension: 0.4,
-                                    yAxisID: 'y',
-                                },
-                                {
-                                    label: 'Air Squats',
-                                    data: logs.map(l => l.squats),
-                                    borderColor: '#D3D3D3',
-                                    backgroundColor: 'rgba(211, 211, 211, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
-                                    yAxisID: 'y',
-                                },
-                                {
-                                    label: 'Plank (s)',
-                                    data: logs.map(l => l.plankSeconds),
-                                    borderColor: '#991b1b',
-                                    backgroundColor: 'rgba(153, 27, 27, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
-                                    yAxisID: 'y1',
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                    labels: { color: '#D3D3D3', font: { weight: 'bold' } }
-                                }
-                            },
-                            scales: {
-                                x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
-                                y: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'left',
-                                    grid: { color: 'rgba(211, 211, 211, 0.05)' },
-                                    ticks: { color: '#D3D3D3' }
-                                },
-                                y1: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'right',
-                                    grid: { drawOnChartArea: false },
-                                    ticks: { color: '#D3D3D3' }
-                                }
-                            }
-                        }
-                    });
-                }
-                return () => { if (chartInstance.current) chartInstance.current.destroy(); };
-            }, [activeTab, logs]);
-
-            const toggleExercise = (dayIndex, exerciseIndex) => {
-                const key = `${dayIndex}-${exerciseIndex}`;
-                setCompletedExercises(prev => ({ ...prev, [key]: !prev[key] }));
-            };
-
-            const handlePyramidStepComplete = () => {
-                setIsPyramidResting(false);
-                if (pyramidIndex < PYRAMID_SEQUENCE.length - 1) {
-                    setPyramidIndex(prev => prev + 1);
-                } else {
-                    setCompletedExercises(prev => ({ ...prev, '1-0': true }));
-                }
-            };
-
-            const handleLogSubmit = (e) => {
-                e.preventDefault();
-                if (!pushups || !squats || !plankMin || !plankSec) return;
-                const totalPlankSeconds = parseInt(plankMin) * 60 + parseInt(plankSec);
-                const newLog = { 
-                    id: Date.now().toString(), 
-                    date: logDate, 
-                    pushups: parseInt(pushups), 
-                    squats: parseInt(squats), 
-                    plankSeconds: totalPlankSeconds 
-                };
-                setLogs(prev => [...prev, newLog].sort((a, b) => a.date.localeCompare(b.date)));
-                setPushups(''); setSquats(''); setPlankMin(''); setPlankSec('');
-                setActiveTab('INTELLIGENCE');
-            };
-
-            const clearAllData = () => {
-                setLogs([]); setCompletedExercises({}); setWeek(1); setPyramidIndex(0); setIsPyramidResting(false);
-                localStorage.clear();
-                setShowClearModal(false);
-            };
-
-            const completeMission = () => {
-                setCompletedExercises({}); setWeek(prev => prev + 1); setPyramidIndex(0); setIsPyramidResting(false);
-                setShowIncompleteModal(false);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-
-            const handleMissionComplete = () => {
-                const totalExercises = WORKOUT_SCHEDULE.reduce((acc, day) => acc + day.exercises.length, 0);
-                const completedCount = Object.values(completedExercises).filter(Boolean).length;
-                if (completedCount < totalExercises) setShowIncompleteModal(true);
-                else completeMission();
-            };
-
-            const exportToCSV = () => {
-                if (logs.length === 0) return;
-                const headers = ["Date", "Push-ups", "Air Squats", "Plank (Seconds)"];
-                const rows = logs.map(l => [l.date, l.pushups, l.squats, l.plankSeconds]);
-                const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", `blackops_export_${new Date().toISOString().split('T')[0]}.csv`);
-                link.click();
-            };
-
-            const terminateLog = (id) => {
-                setLogs(prev => prev.filter(l => l.id !== id));
-                setLogToDelete(null);
-            };
-
-            return (
-                <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden bg-tactical-bg">
-                    <header className="p-6 pt-8 flex flex-col gap-1 border-b border-tactical-army/20 bg-tactical-bg/80 backdrop-blur-md sticky top-0 z-50">
-                        <div className="flex items-center gap-2">
-                            <Icon name="shield" size={28} color="#4B5320" />
-                            <h1 className="text-3xl font-black tracking-tighter uppercase italic">Black Ops</h1>
-                        </div>
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-tactical-army font-bold">Military Calisthenics Program</p>
-                    </header>
-
-                    <main className="flex-1 p-6 pb-32 overflow-y-auto">
-                        {activeTab === 'MISSION' && (
-                            <div className="space-y-6 fade-in">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                        <Icon name="target" size={20} color="#4B5320" />
-                                        The Mission
-                                    </h2>
-                                    <span className="text-[10px] bg-tactical-army/20 text-tactical-army px-2 py-1 rounded border border-tactical-army/30 font-bold uppercase">WEEK {week.toString().padStart(2, '0')}</span>
-                                </div>
-                                <div className="space-y-4">
-                                    {WORKOUT_SCHEDULE.map((day) => (
-                                        <div key={day.day} className="tactical-card overflow-hidden">
-                                            <div className="flex items-stretch">
-                                                <div className="w-12 shrink-0 bg-tactical-army flex flex-col items-center justify-center text-white font-black">
-                                                    <span className="text-[10px] opacity-70">DAY</span>
-                                                    <span className="text-xl leading-none">0{day.day}</span>
-                                                </div>
-                                                <div className="flex-1 p-4 min-w-0">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <h3 className="font-bold text-lg leading-tight">{day.title}</h3>
-                                                        {day.type === 'rest' && <Icon name="activity" size={16} color="#4B5320" className="opacity-50" />}
-                                                        {day.type === 'amrap' && <Icon name="timer" size={16} color="#991b1b" />}
-                                                    </div>
-                                                    <p className="text-tactical-army text-xs font-bold uppercase tracking-wider mb-2">{day.routine}</p>
-                                                    <p className="text-sm text-tactical-silver/70 leading-relaxed mb-4">{day.details}</p>
-                                                    <div className="space-y-2 mb-4">
-                                                        {day.exercises.map((exercise, idx) => {
-                                                            const isCompleted = completedExercises[`${day.day}-${idx}`];
-                                                            const isPyramid = day.type === 'pyramid';
-                                                            const currentPyramidReps = PYRAMID_SEQUENCE[pyramidIndex];
-                                                            return (
-                                                                <div key={idx} className="space-y-3">
-                                                                    <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5">
-                                                                        {isCompleted ? <Icon name="check-circle-2" size={18} color="#4B5320" className="shrink-0" /> : <Icon name="circle" size={18} color="#4B5320" className="shrink-0 opacity-30 group-hover:opacity-60" />}
-                                                                        <div className="flex-1 flex items-center justify-between gap-2">
-                                                                            <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
-                                                                            {isCompleted && (
-                                                                                <span className="text-[7px] font-black uppercase tracking-tighter text-tactical-army border-2 border-tactical-army px-1 py-0.5 rounded shrink-0 whitespace-nowrap bg-tactical-army/5 -rotate-12">
-                                                                                    Objective complete
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                    </button>
-                                                                    {isPyramid && !isCompleted && (
-                                                                        <div className="ml-7 space-y-3 border-l border-tactical-army/10 pl-4">
-                                                                            <button onClick={() => setIsPyramidResting(true)} disabled={isPyramidResting} className="w-full flex items-center gap-3 text-left group py-1.5 disabled:opacity-50">
-                                                                                <Icon name="circle" size={18} color={isPyramidResting ? "#991b1b" : "#4B5320"} className={`shrink-0 ${isPyramidResting ? 'animate-pulse' : 'opacity-30'}`} />
-                                                                                <span className="text-sm text-tactical-silver">Target: {currentPyramidReps} Push-ups</span>
-                                                                            </button>
-                                                                            {isPyramidResting && <RestTimer initialSeconds={currentPyramidReps * 5} autoStart={true} onComplete={handlePyramidStepComplete} />}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                    {day.type === 'pyramid' && (
-                                                        <div className="mt-2 text-[10px] text-tactical-army/40 font-bold uppercase tracking-widest flex justify-between">
-                                                            <span>Progress: {pyramidIndex + 1} / {PYRAMID_SEQUENCE.length}</span>
-                                                            <span>Peak: 10 Reps</span>
-                                                        </div>
-                                                    )}
-                                                    {day.type === 'amrap' && <AMRAPTimer />}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="pt-4 pb-8">
-                                    <button onClick={handleMissionComplete} className="w-full tactical-button py-4 text-white">
-                                        <Icon name="check-circle-2" size={20} color="#FFFFFF" />
-                                        Mission Complete
-                                    </button>
-                                    <p className="text-[10px] text-center mt-3 text-tactical-army font-bold uppercase tracking-widest opacity-60">
-                                        Resets checks & advances to week {week + 1}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'LOG' && (
-                            <div className="space-y-6 fade-in">
-                                <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <Icon name="clipboard-list" size={20} color="#4B5320" />
-                                    Log Session
-                                </h2>
-                                <form onSubmit={handleLogSubmit} className="tactical-card p-6 space-y-5">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Mission Date</label>
-                                        <input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} className="tactical-input" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Push-ups</label>
-                                            <input type="number" placeholder="Max Reps" value={pushups} onChange={(e) => setPushups(e.target.value)} className="tactical-input" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Air Squats</label>
-                                            <input type="number" placeholder="Max Reps" value={squats} onChange={(e) => setSquats(e.target.value)} className="tactical-input" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Plank Duration</label>
-                                        <div className="flex gap-2">
-                                            <input type="number" placeholder="Min" value={plankMin} onChange={(e) => setPlankMin(e.target.value)} className="tactical-input text-center" />
-                                            <input type="number" placeholder="Sec" value={plankSec} onChange={(e) => setPlankSec(e.target.value)} className="tactical-input text-center" />
-                                        </div>
-                                    </div>
-                                    <button type="submit" className="tactical-button w-full py-4">Submit mission report</button>
-                                </form>
-
-                                <div className="space-y-4">
-                                    <h3 className="text-xs uppercase tracking-widest font-bold text-tactical-army flex items-center gap-2">
-                                        <Icon name="history" size={14} color="#4B5320" />
-                                        Recent mission reports
-                                    </h3>
-                                    {logs.length === 0 ? (
-                                        <div className="text-center py-8 text-tactical-silver/30 italic text-sm border-2 border-dashed border-tactical-army/10 rounded-lg">
-                                            No data recorded. Complete your first Saturday Diagnostic.
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            {logs.slice().reverse().map(log => (
-                                                <div key={log.id} className="tactical-card p-3 flex justify-between items-center text-sm group">
-                                                    <div className="flex-1">
-                                                        <p className="font-bold text-lg">{new Date(log.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                                                        <p className="text-[15px] text-tactical-army font-bold uppercase">
-                                                            P: {log.pushups} | S: {log.squats} | PL: {Math.floor(log.plankSeconds / 60)}:{(log.plankSeconds % 60).toString().padStart(2, '0')}
-                                                        </p>
-                                                    </div>
-                                                    <button 
-                                                        onClick={() => setLogToDelete(log.id)}
-                                                        className="p-3 text-tactical-red/80 hover:text-tactical-red transition-colors flex flex-col items-center gap-1"
-                                                    >
-                                                        <Icon name="trash-2" size={24} color="#991b1b" />
-                                                        <span className="text-[12px] font-black uppercase tracking-tighter">Terminate</span>
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'INTELLIGENCE' && (
-                            <div className="space-y-6 fade-in">
-                                <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <Icon name="bar-chart-3" size={20} color="#4B5320" />
-                                    Intelligence
-                                </h2>
-                                <div className="tactical-card p-4 h-64">
-                                    {logs.length < 2 ? (
-                                        <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                                            <Icon name="activity" size={48} color="#4B5320" className="opacity-20 mb-2" />
-                                            <p className="text-sm text-tactical-silver/50">Insufficient data for trend analysis. Log at least 2 diagnostic sessions.</p>
-                                        </div>
-                                    ) : (
-                                        <canvas ref={chartRef}></canvas>
-                                    )}
-                                </div>
-                                <div className="tactical-card p-4">
-                                    <h3 className="text-xs uppercase font-bold text-tactical-army mb-4">Data Management</h3>
-                                    <div className="flex gap-3">
-                                        <button onClick={exportToCSV} disabled={logs.length === 0} className="flex-1 tactical-button bg-tactical-charcoal border border-tactical-army py-2">
-                                            <Icon name="download" size={16} color="#4B5320" />
-                                            Export CSV
-                                        </button>
-                                        <button onClick={() => setShowClearModal(true)} className="flex-1 tactical-button bg-tactical-red/20 border border-tactical-red/50 py-2 text-tactical-red">
-                                            <Icon name="trash-2" size={16} color="#991b1b" />
-                                            Clear Data
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </main>
-
-                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-6 py-4 flex justify-between items-center z-50">
-                        <button onClick={() => setActiveTab('MISSION')} className={`flex flex-col items-center gap-1 ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="dumbbell" size={24} color={activeTab === 'MISSION' ? "#4B5320" : "#555555"} />
-                            <span className="text-[10px] font-black uppercase">Mission</span>
-                        </button>
-                        <button onClick={() => setActiveTab('LOG')} className={`flex flex-col items-center gap-1 ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="clipboard-list" size={24} color={activeTab === 'LOG' ? "#4B5320" : "#555555"} />
-                            <span className="text-[10px] font-black uppercase">Log</span>
-                        </button>
-                        <button onClick={() => setActiveTab('INTELLIGENCE')} className={`flex flex-col items-center gap-1 ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="bar-chart-3" size={24} color={activeTab === 'INTELLIGENCE' ? "#4B5320" : "#555555"} />
-                            <span className="text-[10px] font-black uppercase">Intel</span>
-                        </button>
-                    </nav>
-
-                    {/* Modals */}
-                    {showClearModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-tactical-bg/90 backdrop-blur-sm">
-                            <div className="tactical-card p-8 max-w-xs w-full border-tactical-red/50 text-center space-y-6">
-                                <h3 className="text-xl font-black uppercase text-tactical-red tracking-tighter">Purge Protocol</h3>
-                                <p className="text-sm text-tactical-silver/60">Permanently wipe all logs? Confirm purge?</p>
-                                <div className="flex flex-col gap-3">
-                                    <button onClick={clearAllData} className="tactical-button bg-tactical-red py-3">Confirm Purge</button>
-                                    <button onClick={() => setShowClearModal(false)} className="text-xs uppercase font-bold text-tactical-silver/40">Abort</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {showIncompleteModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-tactical-bg/90 backdrop-blur-sm">
-                            <div className="tactical-card p-8 max-w-xs w-full border-tactical-army/50 text-center space-y-6">
-                                <h3 className="text-xl font-black uppercase text-tactical-army tracking-tighter">Mission not complete</h3>
-                                <p className="text-sm text-tactical-silver/60">Objectives remaining. Advance anyway?</p>
-                                <div className="flex flex-col gap-3">
-                                    <button onClick={completeMission} className="tactical-button py-3">Advance</button>
-                                    <button onClick={() => setShowIncompleteModal(false)} className="text-xs uppercase font-bold text-tactical-silver/40">Return</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {logToDelete && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-tactical-bg/90 backdrop-blur-sm">
-                            <div className="tactical-card p-8 max-w-xs w-full border-tactical-red/50 text-center space-y-6">
-                                <h3 className="text-xl font-black uppercase text-tactical-red tracking-tighter">Terminate Entry</h3>
-                                <p className="text-sm text-tactical-silver/60">Redact this mission record?</p>
-                                <div className="flex flex-col gap-3">
-                                    <button onClick={() => terminateLog(logToDelete)} className="tactical-button bg-tactical-red py-3">Confirm Termination</button>
-                                    <button onClick={() => setLogToDelete(null)} className="text-xs uppercase font-bold text-tactical-silver/40">Cancel</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
     </script>
 </body>
 </html>
