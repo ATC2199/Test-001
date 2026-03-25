@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Black Ops: Military Calisthenics</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --tactical-bg: #0A0A0A;
+            --tactical-army: #4B5320;
+            --tactical-charcoal: #1E1E1E;
+            --tactical-silver: #D3D3D3;
+            --tactical-red: #991b1b;
+        }
+
+        body {
+            background-color: var(--tactical-bg);
+            color: var(--tactical-silver);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'Space Grotesk', monospace;
+        }
+
+        .tactical-card {
+            background-color: var(--tactical-charcoal);
+            border: 1px solid rgba(75, 83, 32, 0.2);
+            border-radius: 0.5rem;
+        }
+
+        .tactical-button {
+            background-color: var(--tactical-army);
+            color: white;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .tactical-button:hover {
+            background-color: #5d6628;
+            transform: translateY(-1px);
+        }
+
+        .tactical-input {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(75, 83, 32, 0.3);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .tactical-input:focus {
+            outline: none;
+            border-color: var(--tactical-army);
+        }
+
+        /* Custom Scrollbar */
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--tactical-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--tactical-army);
+            border-radius: 10px;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'tactical-bg': '#0A0A0A',
+                        'tactical-army': '#4B5320',
+                        'tactical-charcoal': '#1E1E1E',
+                        'tactical-silver': '#D3D3D3',
+                        'tactical-red': '#991b1b',
+                    }
+                }
+            }
+        }
+    </script>
+<script src="/_aistudio-iframe.js"></script></head>
+<body>
+    <div id="root"></div>
+
+    <!-- React and Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-chartjs-2@5.2.0/dist/react-chartjs-2.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        // Mock Lucide components for standalone
+        const LucideIcon = ({ name, size = 24, className = "" }) => {
+            useEffect(() => {
+                lucide.createIcons();
+            }, [name]);
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        const Shield = (props) => <LucideIcon name="shield" {...props} />;
+        const Target = (props) => <LucideIcon name="target" {...props} />;
+        const BarChart3 = (props) => <LucideIcon name="bar-chart-3" {...props} />;
+        const Timer = (props) => <LucideIcon name="timer" {...props} />;
+        const ClipboardList = (props) => <LucideIcon name="clipboard-list" {...props} />;
+        const Plus = (props) => <LucideIcon name="plus" {...props} />;
+        const Trash2 = (props) => <LucideIcon name="trash-2" {...props} />;
+        const Download = (props) => <LucideIcon name="download" {...props} />;
+        const Play = (props) => <LucideIcon name="play" {...props} />;
+        const Pause = (props) => <LucideIcon name="pause" {...props} />;
+        const RotateCcw = (props) => <LucideIcon name="rotate-ccw" {...props} />;
+        const ChevronRight = (props) => <LucideIcon name="chevron-right" {...props} />;
+        const Activity = (props) => <LucideIcon name="activity" {...props} />;
+        const Dumbbell = (props) => <LucideIcon name="dumbbell" {...props} />;
+        const History = (props) => <LucideIcon name="history" {...props} />;
+        const CheckCircle2 = (props) => <LucideIcon name="check-circle-2" {...props} />;
+        const Circle = (props) => <LucideIcon name="circle" {...props} />;
+
+        // Mock motion components
+        const motion = {
+            div: ({ children, ...props }) => <div {...props}>{children}</div>,
+            span: ({ children, ...props }) => <span {...props}>{children}</span>
+        };
+        const AnimatePresence = ({ children }) => <>{children}</>;
+
+        // --- Constants ---
+        const PYRAMID_SEQUENCE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const WORKOUT_SCHEDULE = [
+            { day: 1, title: "Upper Body Push", routine: "1-10-1 Push-up Pyramid", details: "1 rep, rest 5s; 2 reps, rest 10s... up to 10, then back down.", exercises: ["Push-up Pyramid (1-10-1)"], type: "pyramid" },
+            { day: 2, title: "Lower Body", routine: "5 Rounds", details: "20 Air Squats, 10 Lunges (each leg), 30 Jumping Jacks.", exercises: ["20 Air Squats", "10 Lunges (each leg)", "30 Jumping Jacks"], type: "rounds" },
+            { day: 3, title: "Active Recovery", routine: "30-min Brisk Walk", details: "World's Greatest Stretch (5 mins).", exercises: ["30-min Brisk Walk", "World's Greatest Stretch"], type: "recovery" },
+            { day: 4, title: "Full Body Smoker", routine: "15-Minute AMRAP", details: "10 Burpees, 20 Mountain Climbers, 15 Sit-ups.", exercises: ["10 Burpees", "20 Mountain Climbers", "15 Sit-ups"], type: "amrap" },
+            { day: 5, title: "Core Stability", routine: "4 Rounds", details: "15 Leg Raises, 20 Russian Twists, 15 Bird-Dogs.", exercises: ["15 Leg Raises", "20 Russian Twists", "15 Bird-Dogs"], type: "rounds" },
+            { day: 6, title: "Saturday Diagnostic", routine: "The Test", details: "Max Push-ups (2m), Max Air Squats (2m), Max Plank Hold.", exercises: ["Max Push-ups (2 min)", "Max Air Squats (2 min)", "Max Plank Hold"], type: "test" },
+            { day: 7, title: "R & R", routine: "Full Recovery", details: "Hydrate, foam roll, and prepare for next week.", exercises: ["Hydrate", "Foam Roll", "Prepare for next week"], type: "rest" }
+        ];
+
+        // --- Components ---
+        const RestTimer = ({ initialSeconds, onComplete, autoStart = false }) => {
+            const [seconds, setSeconds] = useState(initialSeconds);
+            const [isActive, setIsActive] = useState(autoStart);
+            const alarmRef = useRef(null);
+
+            useEffect(() => {
+                alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            }, []);
+
+            useEffect(() => {
+                setSeconds(initialSeconds);
+                if (autoStart) setIsActive(true);
+            }, [initialSeconds, autoStart]);
+
+            useEffect(() => {
+                let interval = null;
+                if (isActive && seconds > 0) {
+                    interval = setInterval(() => {
+                        setSeconds((s) => s - 1);
+                    }, 1000);
+                } else if (seconds === 0 && isActive) {
+                    setIsActive(false);
+                    if (alarmRef.current) {
+                        alarmRef.current.play().catch(e => console.error("Audio play failed", e));
+                    }
+                    if (onComplete) onComplete();
+                }
+                return () => clearInterval(interval);
+            }, [isActive, seconds, onComplete]);
+
+            return (
+                <div className="flex items-center gap-2 bg-tactical-bg p-2 rounded-lg border border-tactical-army/30">
+                    <div className={`text-xl font-mono font-bold w-16 ${seconds === 0 ? 'text-tactical-red animate-pulse' : 'text-tactical-army'}`}>
+                        {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
+                    </div>
+                    <div className="flex-1 flex items-center gap-1">
+                        <button 
+                            onClick={() => {
+                                if (isActive) {
+                                    setSeconds(0);
+                                } else {
+                                    setIsActive(true);
+                                }
+                            }}
+                            disabled={seconds === 0}
+                            className="tactical-button py-1 px-2 disabled:opacity-50 text-[10px]"
+                        >
+                            {isActive ? "I don't need rest" : 'Start Rest'}
+                        </button>
+                        <button 
+                            onClick={() => { setSeconds(initialSeconds); setIsActive(false); }}
+                            className="p-1 text-tactical-silver/50 hover:text-tactical-silver"
+                        >
+                            <RotateCcw size={14} />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const AMRAPTimer = () => {
+            const [timeLeft, setTimeLeft] = useState(15 * 60);
+            const [isActive, setIsActive] = useState(false);
+
+            useEffect(() => {
+                let interval = null;
+                if (isActive && timeLeft > 0) {
+                    interval = setInterval(() => {
+                        setTimeLeft((t) => t - 1);
+                    }, 1000);
+                } else if (timeLeft === 0) {
+                    setIsActive(false);
+                    clearInterval(interval);
+                }
+                return () => clearInterval(interval);
+            }, [isActive, timeLeft]);
+
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            };
+
+            return (
+                <div className="flex flex-col gap-2 bg-tactical-bg p-4 rounded-lg border border-tactical-army/30">
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs uppercase tracking-widest text-tactical-army font-bold">AMRAP Countdown</span>
+                        <Timer size={16} className="text-tactical-army" />
+                    </div>
+                    <div className="text-4xl font-mono text-center py-2 font-black tracking-tighter">
+                        {formatTime(timeLeft)}
+                    </div>
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => setIsActive(!isActive)}
+                            className="flex-1 tactical-button flex items-center justify-center gap-2"
+                        >
+                            {isActive ? <Pause size={16} /> : <Play size={16} />}
+                            {isActive ? 'Pause' : 'Start Mission'}
+                        </button>
+                        <button 
+                            onClick={() => { setTimeLeft(15 * 60); setIsActive(false); }}
+                            className="p-2 bg-tactical-charcoal border border-tactical-army/30 rounded hover:bg-tactical-army/20"
+                        >
+                            <RotateCcw size={20} />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('MISSION');
+            const [logs, setLogs] = useState([]);
+            const [completedExercises, setCompletedExercises] = useState({});
+            const [week, setWeek] = useState(1);
+            const [pyramidIndex, setPyramidIndex] = useState(0);
+            const [isPyramidResting, setIsPyramidResting] = useState(false);
+            
+            const [showClearModal, setShowClearModal] = useState(false);
+            const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+            const [logToDelete, setLogToDelete] = useState(null);
+            
+            const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0]);
+            const [pushups, setPushups] = useState('');
+            const [squats, setSquats] = useState('');
+            const [plankMin, setPlankMin] = useState('');
+            const [plankSec, setPlankSec] = useState('');
+
+            useEffect(() => {
+                const savedLogs = localStorage.getItem('blackops_logs');
+                if (savedLogs) setLogs(JSON.parse(savedLogs));
+                const savedCompleted = localStorage.getItem('blackops_completed');
+                if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted));
+                const savedWeek = localStorage.getItem('blackops_week');
+                if (savedWeek) setWeek(parseInt(savedWeek));
+                const savedPyramid = localStorage.getItem('blackops_pyramid_index');
+                if (savedPyramid) setPyramidIndex(parseInt(savedPyramid));
+            }, []);
+
+            useEffect(() => { localStorage.setItem('blackops_logs', JSON.stringify(logs)); }, [logs]);
+            useEffect(() => { localStorage.setItem('blackops_completed', JSON.stringify(completedExercises)); }, [completedExercises]);
+            useEffect(() => { localStorage.setItem('blackops_week', week.toString()); }, [week]);
+            useEffect(() => { localStorage.setItem('blackops_pyramid_index', pyramidIndex.toString()); }, [pyramidIndex]);
+
+            const toggleExercise = (dayIndex, exerciseIndex) => {
+                const key = `${dayIndex}-${exerciseIndex}`;
+                setCompletedExercises(prev => ({ ...prev, [key]: !prev[key] }));
+            };
+
+            const handlePyramidStepComplete = () => {
+                setIsPyramidResting(false);
+                if (pyramidIndex < PYRAMID_SEQUENCE.length - 1) {
+                    setPyramidIndex(prev => prev + 1);
+                } else {
+                    setCompletedExercises(prev => ({ ...prev, '1-0': true }));
+                }
+            };
+
+            const handleLogSubmit = (e) => {
+                e.preventDefault();
+                if (!pushups || !squats || !plankMin || !plankSec) return;
+                const totalPlankSeconds = parseInt(plankMin) * 60 + parseInt(plankSec);
+                const newLog = { id: Date.now().toString(), date: logDate, pushups: parseInt(pushups), squats: parseInt(squats), plankSeconds: totalPlankSeconds };
+                setLogs(prev => [...prev, newLog].sort((a, b) => a.date.localeCompare(b.date)));
+                setPushups(''); setSquats(''); setPlankMin(''); setPlankSec('');
+                setActiveTab('INTELLIGENCE');
+            };
+
+            const clearAllData = () => {
+                setLogs([]); setCompletedExercises({}); setWeek(1); setPyramidIndex(0); setIsPyramidResting(false);
+                localStorage.clear();
+                setShowClearModal(false);
+            };
+
+            const completeMission = () => {
+                setCompletedExercises({}); setWeek(prev => prev + 1); setPyramidIndex(0); setIsPyramidResting(false);
+                setShowIncompleteModal(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const handleMissionComplete = () => {
+                const totalExercises = WORKOUT_SCHEDULE.reduce((acc, day) => acc + day.exercises.length, 0);
+                const completedCount = Object.values(completedExercises).filter(Boolean).length;
+                if (completedCount < totalExercises) setShowIncompleteModal(true);
+                else completeMission();
+            };
+
+            const exportToCSV = () => {
+                if (logs.length === 0) return;
+                const headers = ["Date", "Push-ups", "Air Squats", "Plank (Seconds)"];
+                const rows = logs.map(l => [l.date, l.pushups, l.squats, l.plankSeconds]);
+                const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", `blackops_export_${new Date().toISOString().split('T')[0]}.csv`);
+                link.click();
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden">
+                    <header className="p-6 pt-8 flex flex-col gap-1 border-b border-tactical-army/20 bg-tactical-bg/80 backdrop-blur-md sticky top-0 z-50">
+                        <div className="flex items-center gap-2">
+                            <Shield className="text-tactical-army" size={28} />
+                            <h1 className="text-3xl font-black tracking-tighter uppercase italic">Black Ops</h1>
+                        </div>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-tactical-army font-bold">Military Calisthenics Program</p>
+                    </header>
+
+                    <main className="flex-1 p-6 pb-24 overflow-y-auto">
+                        {activeTab === 'MISSION' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-xl font-black uppercase flex items-center gap-2">
+                                        <Target className="text-tactical-army" size={20} />
+                                        The Mission
+                                    </h2>
+                                    <span className="text-[10px] bg-tactical-army/20 text-tactical-army px-2 py-1 rounded border border-tactical-army/30 font-bold uppercase">WEEK {week.toString().padStart(2, '0')}</span>
+                                </div>
+                                <div className="space-y-4">
+                                    {WORKOUT_SCHEDULE.map((day) => (
+                                        <div key={day.day} className="tactical-card overflow-hidden">
+                                            <div className="flex items-stretch">
+                                                <div className="w-12 shrink-0 bg-tactical-army flex flex-col items-center justify-center text-white font-black">
+                                                    <span className="text-[10px] opacity-70">DAY</span>
+                                                    <span className="text-xl leading-none">0{day.day}</span>
+                                                </div>
+                                                <div className="flex-1 p-4 min-w-0">
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <h3 className="font-bold text-lg leading-tight">{day.title}</h3>
+                                                    </div>
+                                                    <p className="text-tactical-army text-xs font-bold uppercase tracking-wider mb-2">{day.routine}</p>
+                                                    <p className="text-sm text-tactical-silver/70 leading-relaxed mb-4">{day.details}</p>
+                                                    <div className="space-y-2 mb-4">
+                                                        {day.exercises.map((exercise, idx) => {
+                                                            const isCompleted = completedExercises[`${day.day}-${idx}`];
+                                                            const isPyramid = day.type === 'pyramid';
+                                                            const currentPyramidReps = PYRAMID_SEQUENCE[pyramidIndex];
+                                                            return (
+                                                                <div key={idx} className="space-y-3">
+                                                                    <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5">
+                                                                        {isCompleted ? <CheckCircle2 size={18} className="text-tactical-army shrink-0" /> : <Circle size={18} className="text-tactical-army/30 shrink-0 group-hover:text-tactical-army/60" />}
+                                                                        <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
+                                                                    </button>
+                                                                    {isPyramid && !isCompleted && (
+                                                                        <div className="ml-7 space-y-3 border-l border-tactical-army/10 pl-4">
+                                                                            <button onClick={() => setIsPyramidResting(true)} disabled={isPyramidResting} className="w-full flex items-center gap-3 text-left group py-1.5 disabled:opacity-50">
+                                                                                <Circle size={18} className={`shrink-0 ${isPyramidResting ? 'text-tactical-red animate-pulse' : 'text-tactical-army/30'}`} />
+                                                                                <span className="text-sm text-tactical-silver">Target: {currentPyramidReps} Push-ups</span>
+                                                                            </button>
+                                                                            {isPyramidResting && <RestTimer initialSeconds={currentPyramidReps * 5} autoStart={true} onComplete={handlePyramidStepComplete} />}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    {day.type === 'amrap' && <AMRAPTimer />}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={handleMissionComplete} className="w-full tactical-button py-4 flex items-center justify-center gap-3 bg-tactical-army text-white">
+                                    <CheckCircle2 size={20} />
+                                    Mission Complete
+                                </button>
+                            </div>
+                        )}
+
+                        {activeTab === 'LOG' && (
+                            <div className="space-y-6">
+                                <h2 className="text-xl font-black uppercase flex items-center gap-2">
+                                    <ClipboardList className="text-tactical-army" size={20} />
+                                    Log Session
+                                </h2>
+                                <form onSubmit={handleLogSubmit} className="tactical-card p-6 space-y-5">
+                                    <input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} className="tactical-input w-full" />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input type="number" placeholder="Push-ups" value={pushups} onChange={(e) => setPushups(e.target.value)} className="tactical-input w-full" />
+                                        <input type="number" placeholder="Squats" value={squats} onChange={(e) => setSquats(e.target.value)} className="tactical-input w-full" />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <input type="number" placeholder="Min" value={plankMin} onChange={(e) => setPlankMin(e.target.value)} className="tactical-input w-full" />
+                                        <input type="number" placeholder="Sec" value={plankSec} onChange={(e) => setPlankSec(e.target.value)} className="tactical-input w-full" />
+                                    </div>
+                                    <button type="submit" className="tactical-button w-full py-4">Submit report</button>
+                                </form>
+                            </div>
+                        )}
+
+                        {activeTab === 'INTELLIGENCE' && (
+                            <div className="space-y-6">
+                                <h2 className="text-xl font-black uppercase flex items-center gap-2">
+                                    <BarChart3 className="text-tactical-army" size={20} />
+                                    Intelligence
+                                </h2>
+                                <div className="tactical-card p-4">
+                                    <h3 className="text-xs uppercase font-bold text-tactical-army mb-4">Data Management</h3>
+                                    <div className="flex gap-3">
+                                        <button onClick={exportToCSV} className="flex-1 tactical-button bg-tactical-charcoal border border-tactical-army py-2 flex items-center justify-center gap-2">
+                                            <Download size={16} />
+                                            Export CSV
+                                        </button>
+                                        <button onClick={() => setShowClearModal(true)} className="flex-1 tactical-button bg-tactical-red/20 border border-tactical-red/50 py-2 text-tactical-red flex items-center justify-center gap-2">
+                                            <Trash2 size={16} />
+                                            Clear Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-6 py-4 flex justify-between items-center z-50">
+                        <button onClick={() => setActiveTab('MISSION')} className={`flex flex-col items-center gap-1 ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
+                            <Dumbbell size={24} />
+                            <span className="text-[10px] font-black uppercase">Mission</span>
+                        </button>
+                        <button onClick={() => setActiveTab('LOG')} className={`flex flex-col items-center gap-1 ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
+                            <ClipboardList size={24} />
+                            <span className="text-[10px] font-black uppercase">Log</span>
+                        </button>
+                        <button onClick={() => setActiveTab('INTELLIGENCE')} className={`flex flex-col items-center gap-1 ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
+                            <BarChart3 size={24} />
+                            <span className="text-[10px] font-black uppercase">Intel</span>
+                        </button>
+                    </nav>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
