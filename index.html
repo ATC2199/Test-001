@@ -12,8 +12,6 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-
         :root {
             --tactical-bg: #0A0A0A;
             --tactical-army: #4B5320;
@@ -26,6 +24,8 @@
             background-color: var(--tactical-bg);
             color: var(--tactical-silver);
             font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         .font-mono {
@@ -46,19 +46,29 @@
             letter-spacing: 0.1em;
             border-radius: 0.25rem;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        .tactical-button:hover {
+        .tactical-button:hover:not(:disabled) {
             background-color: #5d6628;
             transform: translateY(-1px);
+        }
+
+        .tactical-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
         .tactical-input {
             background-color: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(75, 83, 32, 0.3);
             color: white;
-            padding: 0.5rem;
+            padding: 0.75rem;
             border-radius: 0.25rem;
+            width: 100%;
         }
 
         .tactical-input:focus {
@@ -67,18 +77,24 @@
         }
 
         /* Custom Scrollbar */
-
         ::-webkit-scrollbar {
             width: 4px;
         }
-
         ::-webkit-scrollbar-track {
             background: var(--tactical-bg);
         }
-
         ::-webkit-scrollbar-thumb {
             background: var(--tactical-army);
             border-radius: 10px;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
         }
     </style>
     <script>
@@ -110,41 +126,35 @@
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/react-chartjs-2@5.2.0/dist/react-chartjs-2.min.js"></script>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
         
-        // Mock Lucide components for standalone
-        const LucideIcon = ({ name, size = 24, className = "" }) => {
+        // --- Icon Component ---
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const iconRef = useRef(null);
             useEffect(() => {
-                lucide.createIcons();
-            }, [name]);
-            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+                if (window.lucide && iconRef.current) {
+                    window.lucide.createIcons({
+                        attrs: {
+                            class: className,
+                            'stroke-width': 2,
+                            width: size,
+                            height: size
+                        },
+                        nameAttr: 'data-lucide'
+                    });
+                }
+            }, [name, size, className]);
+
+            return <i data-lucide={name} ref={iconRef} className={className}></i>;
         };
 
-        const Shield = (props) => <LucideIcon name="shield" {...props} />;
-        const Target = (props) => <LucideIcon name="target" {...props} />;
-        const BarChart3 = (props) => <LucideIcon name="bar-chart-3" {...props} />;
-        const Timer = (props) => <LucideIcon name="timer" {...props} />;
-        const ClipboardList = (props) => <LucideIcon name="clipboard-list" {...props} />;
-        const Plus = (props) => <LucideIcon name="plus" {...props} />;
-        const Trash2 = (props) => <LucideIcon name="trash-2" {...props} />;
-        const Download = (props) => <LucideIcon name="download" {...props} />;
-        const Play = (props) => <LucideIcon name="play" {...props} />;
-        const Pause = (props) => <LucideIcon name="pause" {...props} />;
-        const RotateCcw = (props) => <LucideIcon name="rotate-ccw" {...props} />;
-        const ChevronRight = (props) => <LucideIcon name="chevron-right" {...props} />;
-        const Activity = (props) => <LucideIcon name="activity" {...props} />;
-        const Dumbbell = (props) => <LucideIcon name="dumbbell" {...props} />;
-        const History = (props) => <LucideIcon name="history" {...props} />;
-        const CheckCircle2 = (props) => <LucideIcon name="check-circle-2" {...props} />;
-        const Circle = (props) => <LucideIcon name="circle" {...props} />;
-
-        // Mock motion components
+        // --- Mock Motion ---
         const motion = {
-            div: ({ children, ...props }) => <div {...props}>{children}</div>,
-            span: ({ children, ...props }) => <span {...props}>{children}</span>
+            div: ({ children, className, style, ...props }) => <div className={className} style={style} {...props}>{children}</div>,
+            span: ({ children, className, style, ...props }) => <span className={className} style={style} {...props}>{children}</span>,
+            button: ({ children, className, style, ...props }) => <button className={className} style={style} {...props}>{children}</button>
         };
         const AnimatePresence = ({ children }) => <>{children}</>;
 
@@ -199,11 +209,8 @@
                     <div className="flex-1 flex items-center gap-1">
                         <button 
                             onClick={() => {
-                                if (isActive) {
-                                    setSeconds(0);
-                                } else {
-                                    setIsActive(true);
-                                }
+                                if (isActive) setSeconds(0);
+                                else setIsActive(true);
                             }}
                             disabled={seconds === 0}
                             className="tactical-button py-1 px-2 disabled:opacity-50 text-[10px]"
@@ -214,7 +221,7 @@
                             onClick={() => { setSeconds(initialSeconds); setIsActive(false); }}
                             className="p-1 text-tactical-silver/50 hover:text-tactical-silver"
                         >
-                            <RotateCcw size={14} />
+                            <Icon name="rotate-ccw" size={14} />
                         </button>
                     </div>
                 </div>
@@ -248,7 +255,7 @@
                 <div className="flex flex-col gap-2 bg-tactical-bg p-4 rounded-lg border border-tactical-army/30">
                     <div className="flex justify-between items-center">
                         <span className="text-xs uppercase tracking-widest text-tactical-army font-bold">AMRAP Countdown</span>
-                        <Timer size={16} className="text-tactical-army" />
+                        <Icon name="timer" size={16} className="text-tactical-army" />
                     </div>
                     <div className="text-4xl font-mono text-center py-2 font-black tracking-tighter">
                         {formatTime(timeLeft)}
@@ -256,16 +263,16 @@
                     <div className="flex gap-2">
                         <button 
                             onClick={() => setIsActive(!isActive)}
-                            className="flex-1 tactical-button flex items-center justify-center gap-2"
+                            className="flex-1 tactical-button py-3"
                         >
-                            {isActive ? <Pause size={16} /> : <Play size={16} />}
+                            <Icon name={isActive ? "pause" : "play"} size={16} />
                             {isActive ? 'Pause' : 'Start Mission'}
                         </button>
                         <button 
                             onClick={() => { setTimeLeft(15 * 60); setIsActive(false); }}
                             className="p-2 bg-tactical-charcoal border border-tactical-army/30 rounded hover:bg-tactical-army/20"
                         >
-                            <RotateCcw size={20} />
+                            <Icon name="rotate-ccw" size={20} />
                         </button>
                     </div>
                 </div>
@@ -290,6 +297,9 @@
             const [plankMin, setPlankMin] = useState('');
             const [plankSec, setPlankSec] = useState('');
 
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
             useEffect(() => {
                 const savedLogs = localStorage.getItem('blackops_logs');
                 if (savedLogs) setLogs(JSON.parse(savedLogs));
@@ -305,6 +315,81 @@
             useEffect(() => { localStorage.setItem('blackops_completed', JSON.stringify(completedExercises)); }, [completedExercises]);
             useEffect(() => { localStorage.setItem('blackops_week', week.toString()); }, [week]);
             useEffect(() => { localStorage.setItem('blackops_pyramid_index', pyramidIndex.toString()); }, [pyramidIndex]);
+
+            // Chart rendering
+            useEffect(() => {
+                if (activeTab === 'INTELLIGENCE' && chartRef.current && logs.length >= 2) {
+                    if (chartInstance.current) chartInstance.current.destroy();
+                    
+                    const ctx = chartRef.current.getContext('2d');
+                    chartInstance.current = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: logs.map(l => {
+                                const d = new Date(l.date);
+                                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                            }),
+                            datasets: [
+                                {
+                                    label: 'Push-ups',
+                                    data: logs.map(l => l.pushups),
+                                    borderColor: '#4B5320',
+                                    backgroundColor: 'rgba(75, 83, 32, 0.2)',
+                                    fill: true,
+                                    tension: 0.4,
+                                    yAxisID: 'y',
+                                },
+                                {
+                                    label: 'Air Squats',
+                                    data: logs.map(l => l.squats),
+                                    borderColor: '#D3D3D3',
+                                    backgroundColor: 'rgba(211, 211, 211, 0.1)',
+                                    fill: true,
+                                    tension: 0.4,
+                                    yAxisID: 'y',
+                                },
+                                {
+                                    label: 'Plank (s)',
+                                    data: logs.map(l => l.plankSeconds),
+                                    borderColor: '#991b1b',
+                                    backgroundColor: 'rgba(153, 27, 27, 0.1)',
+                                    fill: true,
+                                    tension: 0.4,
+                                    yAxisID: 'y1',
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: { color: '#D3D3D3', font: { weight: 'bold' } }
+                                }
+                            },
+                            scales: {
+                                x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    grid: { color: 'rgba(211, 211, 211, 0.05)' },
+                                    ticks: { color: '#D3D3D3' }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    grid: { drawOnChartArea: false },
+                                    ticks: { color: '#D3D3D3' }
+                                }
+                            }
+                        }
+                    });
+                }
+                return () => { if (chartInstance.current) chartInstance.current.destroy(); };
+            }, [activeTab, logs]);
 
             const toggleExercise = (dayIndex, exerciseIndex) => {
                 const key = `${dayIndex}-${exerciseIndex}`;
@@ -363,21 +448,21 @@
             };
 
             return (
-                <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden">
+                <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden bg-tactical-bg">
                     <header className="p-6 pt-8 flex flex-col gap-1 border-b border-tactical-army/20 bg-tactical-bg/80 backdrop-blur-md sticky top-0 z-50">
                         <div className="flex items-center gap-2">
-                            <Shield className="text-tactical-army" size={28} />
+                            <Icon name="shield" size={28} className="text-tactical-army" />
                             <h1 className="text-3xl font-black tracking-tighter uppercase italic">Black Ops</h1>
                         </div>
                         <p className="text-[10px] uppercase tracking-[0.3em] text-tactical-army font-bold">Military Calisthenics Program</p>
                     </header>
 
-                    <main className="flex-1 p-6 pb-24 overflow-y-auto">
+                    <main className="flex-1 p-6 pb-32 overflow-y-auto">
                         {activeTab === 'MISSION' && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                        <Target className="text-tactical-army" size={20} />
+                                        <Icon name="target" size={20} className="text-tactical-army" />
                                         The Mission
                                     </h2>
                                     <span className="text-[10px] bg-tactical-army/20 text-tactical-army px-2 py-1 rounded border border-tactical-army/30 font-bold uppercase">WEEK {week.toString().padStart(2, '0')}</span>
@@ -404,13 +489,13 @@
                                                             return (
                                                                 <div key={idx} className="space-y-3">
                                                                     <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5">
-                                                                        {isCompleted ? <CheckCircle2 size={18} className="text-tactical-army shrink-0" /> : <Circle size={18} className="text-tactical-army/30 shrink-0 group-hover:text-tactical-army/60" />}
+                                                                        {isCompleted ? <Icon name="check-circle-2" size={18} className="text-tactical-army shrink-0" /> : <Icon name="circle" size={18} className="text-tactical-army/30 shrink-0 group-hover:text-tactical-army/60" />}
                                                                         <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
                                                                     </button>
                                                                     {isPyramid && !isCompleted && (
                                                                         <div className="ml-7 space-y-3 border-l border-tactical-army/10 pl-4">
                                                                             <button onClick={() => setIsPyramidResting(true)} disabled={isPyramidResting} className="w-full flex items-center gap-3 text-left group py-1.5 disabled:opacity-50">
-                                                                                <Circle size={18} className={`shrink-0 ${isPyramidResting ? 'text-tactical-red animate-pulse' : 'text-tactical-army/30'}`} />
+                                                                                <Icon name="circle" size={18} className={`shrink-0 ${isPyramidResting ? 'text-tactical-red animate-pulse' : 'text-tactical-army/30'}`} />
                                                                                 <span className="text-sm text-tactical-silver">Target: {currentPyramidReps} Push-ups</span>
                                                                             </button>
                                                                             {isPyramidResting && <RestTimer initialSeconds={currentPyramidReps * 5} autoStart={true} onComplete={handlePyramidStepComplete} />}
@@ -426,8 +511,8 @@
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={handleMissionComplete} className="w-full tactical-button py-4 flex items-center justify-center gap-3 bg-tactical-army text-white">
-                                    <CheckCircle2 size={20} />
+                                <button onClick={handleMissionComplete} className="w-full tactical-button py-4">
+                                    <Icon name="check-circle-2" size={20} />
                                     Mission Complete
                                 </button>
                             </div>
@@ -436,18 +521,30 @@
                         {activeTab === 'LOG' && (
                             <div className="space-y-6">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <ClipboardList className="text-tactical-army" size={20} />
+                                    <Icon name="clipboard-list" size={20} className="text-tactical-army" />
                                     Log Session
                                 </h2>
                                 <form onSubmit={handleLogSubmit} className="tactical-card p-6 space-y-5">
-                                    <input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} className="tactical-input w-full" />
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <input type="number" placeholder="Push-ups" value={pushups} onChange={(e) => setPushups(e.target.value)} className="tactical-input w-full" />
-                                        <input type="number" placeholder="Squats" value={squats} onChange={(e) => setSquats(e.target.value)} className="tactical-input w-full" />
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Mission Date</label>
+                                        <input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} className="tactical-input" />
                                     </div>
-                                    <div className="flex gap-2">
-                                        <input type="number" placeholder="Min" value={plankMin} onChange={(e) => setPlankMin(e.target.value)} className="tactical-input w-full" />
-                                        <input type="number" placeholder="Sec" value={plankSec} onChange={(e) => setPlankSec(e.target.value)} className="tactical-input w-full" />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Push-ups</label>
+                                            <input type="number" placeholder="Max Reps" value={pushups} onChange={(e) => setPushups(e.target.value)} className="tactical-input" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Squats</label>
+                                            <input type="number" placeholder="Max Reps" value={squats} onChange={(e) => setSquats(e.target.value)} className="tactical-input" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] uppercase tracking-widest font-bold text-tactical-army">Plank Duration</label>
+                                        <div className="flex gap-2">
+                                            <input type="number" placeholder="Min" value={plankMin} onChange={(e) => setPlankMin(e.target.value)} className="tactical-input text-center" />
+                                            <input type="number" placeholder="Sec" value={plankSec} onChange={(e) => setPlankSec(e.target.value)} className="tactical-input text-center" />
+                                        </div>
                                     </div>
                                     <button type="submit" className="tactical-button w-full py-4">Submit report</button>
                                 </form>
@@ -457,18 +554,28 @@
                         {activeTab === 'INTELLIGENCE' && (
                             <div className="space-y-6">
                                 <h2 className="text-xl font-black uppercase flex items-center gap-2">
-                                    <BarChart3 className="text-tactical-army" size={20} />
+                                    <Icon name="bar-chart-3" size={20} className="text-tactical-army" />
                                     Intelligence
                                 </h2>
+                                <div className="tactical-card p-4 h-64">
+                                    {logs.length < 2 ? (
+                                        <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                                            <Icon name="activity" size={48} className="text-tactical-army/20 mb-2" />
+                                            <p className="text-sm text-tactical-silver/50">Insufficient data for trend analysis. Log at least 2 diagnostic sessions.</p>
+                                        </div>
+                                    ) : (
+                                        <canvas ref={chartRef}></canvas>
+                                    )}
+                                </div>
                                 <div className="tactical-card p-4">
                                     <h3 className="text-xs uppercase font-bold text-tactical-army mb-4">Data Management</h3>
                                     <div className="flex gap-3">
-                                        <button onClick={exportToCSV} className="flex-1 tactical-button bg-tactical-charcoal border border-tactical-army py-2 flex items-center justify-center gap-2">
-                                            <Download size={16} />
+                                        <button onClick={exportToCSV} disabled={logs.length === 0} className="flex-1 tactical-button bg-tactical-charcoal border border-tactical-army py-2">
+                                            <Icon name="download" size={16} />
                                             Export CSV
                                         </button>
-                                        <button onClick={() => setShowClearModal(true)} className="flex-1 tactical-button bg-tactical-red/20 border border-tactical-red/50 py-2 text-tactical-red flex items-center justify-center gap-2">
-                                            <Trash2 size={16} />
+                                        <button onClick={() => setShowClearModal(true)} className="flex-1 tactical-button bg-tactical-red/20 border border-tactical-red/50 py-2 text-tactical-red">
+                                            <Icon name="trash-2" size={16} />
                                             Clear Data
                                         </button>
                                     </div>
@@ -479,18 +586,45 @@
 
                     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-6 py-4 flex justify-between items-center z-50">
                         <button onClick={() => setActiveTab('MISSION')} className={`flex flex-col items-center gap-1 ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Dumbbell size={24} />
+                            <Icon name="dumbbell" size={24} />
                             <span className="text-[10px] font-black uppercase">Mission</span>
                         </button>
                         <button onClick={() => setActiveTab('LOG')} className={`flex flex-col items-center gap-1 ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <ClipboardList size={24} />
+                            <Icon name="clipboard-list" size={24} />
                             <span className="text-[10px] font-black uppercase">Log</span>
                         </button>
                         <button onClick={() => setActiveTab('INTELLIGENCE')} className={`flex flex-col items-center gap-1 ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <BarChart3 size={24} />
+                            <Icon name="bar-chart-3" size={24} />
                             <span className="text-[10px] font-black uppercase">Intel</span>
                         </button>
                     </nav>
+
+                    {/* Modals */}
+                    {showClearModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-tactical-bg/90 backdrop-blur-sm">
+                            <div className="tactical-card p-8 max-w-xs w-full border-tactical-red/50 text-center space-y-6">
+                                <h3 className="text-xl font-black uppercase text-tactical-red tracking-tighter">Purge Protocol</h3>
+                                <p className="text-sm text-tactical-silver/60">Permanently wipe all logs? Confirm purge?</p>
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={clearAllData} className="tactical-button bg-tactical-red py-3">Confirm Purge</button>
+                                    <button onClick={() => setShowClearModal(false)} className="text-xs uppercase font-bold text-tactical-silver/40">Abort</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showIncompleteModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-tactical-bg/90 backdrop-blur-sm">
+                            <div className="tactical-card p-8 max-w-xs w-full border-tactical-army/50 text-center space-y-6">
+                                <h3 className="text-xl font-black uppercase text-tactical-army tracking-tighter">Mission not complete</h3>
+                                <p className="text-sm text-tactical-silver/60">Objectives remaining. Advance anyway?</p>
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={completeMission} className="tactical-button py-3">Advance</button>
+                                    <button onClick={() => setShowIncompleteModal(false)} className="text-xs uppercase font-bold text-tactical-silver/40">Return</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
