@@ -149,7 +149,8 @@
                             class: className,
                             'stroke-width': 2,
                             width: size,
-                            height: size
+                            height: size,
+                            stroke: 'currentColor'
                         },
                         nameAttr: 'data-lucide'
                     });
@@ -222,7 +223,7 @@
                             onClick={() => { setSeconds(initialSeconds); setIsActive(false); }}
                             className="p-1 text-tactical-silver/50 hover:text-tactical-silver"
                         >
-                            <Icon name="rotate-ccw" size={14} />
+                            <Icon name="rotate-ccw" size={14} className="text-tactical-silver/50" />
                         </button>
                     </div>
                 </div>
@@ -264,16 +265,16 @@
                     <div className="flex gap-2">
                         <button 
                             onClick={() => setIsActive(!isActive)}
-                            className="flex-1 tactical-button py-3"
+                            className="flex-1 tactical-button py-3 text-white"
                         >
-                            <Icon name={isActive ? "pause" : "play"} size={16} />
+                            <Icon name={isActive ? "pause" : "play"} size={16} className="text-white" />
                             {isActive ? 'Pause' : 'Start Mission'}
                         </button>
                         <button 
                             onClick={() => { setTimeLeft(15 * 60); setIsActive(false); }}
                             className="p-2 bg-tactical-charcoal border border-tactical-army/30 rounded hover:bg-tactical-army/20"
                         >
-                            <Icon name="rotate-ccw" size={20} />
+                            <Icon name="rotate-ccw" size={20} className="text-white" />
                         </button>
                     </div>
                 </div>
@@ -538,10 +539,15 @@
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={handleMissionComplete} className="w-full tactical-button py-4">
-                                    <Icon name="check-circle-2" size={20} />
-                                    Mission Complete
-                                </button>
+                                <div className="pt-4 pb-8">
+                                    <button onClick={handleMissionComplete} className="w-full tactical-button py-4 text-white">
+                                        <Icon name="check-circle-2" size={20} className="text-white" />
+                                        Mission Complete
+                                    </button>
+                                    <p className="text-[10px] text-center mt-3 text-tactical-army font-bold uppercase tracking-widest opacity-60">
+                                        Resets checks & advances to week {week + 1}
+                                    </p>
+                                </div>
                             </div>
                         )}
 
@@ -578,7 +584,7 @@
 
                                 <div className="space-y-4">
                                     <h3 className="text-xs uppercase tracking-widest font-bold text-tactical-army flex items-center gap-2">
-                                        <Icon name="history" size={14} />
+                                        <Icon name="history" size={14} className="text-tactical-army" />
                                         Recent mission reports
                                     </h3>
                                     {logs.length === 0 ? (
@@ -599,7 +605,7 @@
                                                         onClick={() => setLogToDelete(log.id)}
                                                         className="p-3 text-tactical-red/80 hover:text-tactical-red transition-colors flex flex-col items-center gap-1"
                                                     >
-                                                        <Icon name="trash-2" size={24} />
+                                                        <Icon name="trash-2" size={24} className="text-tactical-red" />
                                                         <span className="text-[12px] font-black uppercase tracking-tighter">Terminate</span>
                                                     </button>
                                                 </div>
@@ -630,11 +636,11 @@
                                     <h3 className="text-xs uppercase font-bold text-tactical-army mb-4">Data Management</h3>
                                     <div className="flex gap-3">
                                         <button onClick={exportToCSV} disabled={logs.length === 0} className="flex-1 tactical-button bg-tactical-charcoal border border-tactical-army py-2">
-                                            <Icon name="download" size={16} />
+                                            <Icon name="download" size={16} className="text-tactical-army" />
                                             Export CSV
                                         </button>
                                         <button onClick={() => setShowClearModal(true)} className="flex-1 tactical-button bg-tactical-red/20 border border-tactical-red/50 py-2 text-tactical-red">
-                                            <Icon name="trash-2" size={16} />
+                                            <Icon name="trash-2" size={16} className="text-tactical-red" />
                                             Clear Data
                                         </button>
                                     </div>
@@ -645,15 +651,15 @@
 
                     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-6 py-4 flex justify-between items-center z-50">
                         <button onClick={() => setActiveTab('MISSION')} className={`flex flex-col items-center gap-1 ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="dumbbell" size={24} />
+                            <Icon name="dumbbell" size={24} className={activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'} />
                             <span className="text-[10px] font-black uppercase">Mission</span>
                         </button>
                         <button onClick={() => setActiveTab('LOG')} className={`flex flex-col items-center gap-1 ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="clipboard-list" size={24} />
+                            <Icon name="clipboard-list" size={24} className={activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'} />
                             <span className="text-[10px] font-black uppercase">Log</span>
                         </button>
                         <button onClick={() => setActiveTab('INTELLIGENCE')} className={`flex flex-col items-center gap-1 ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="bar-chart-3" size={24} />
+                            <Icon name="bar-chart-3" size={24} className={activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'} />
                             <span className="text-[10px] font-black uppercase">Intel</span>
                         </button>
                     </nav>
