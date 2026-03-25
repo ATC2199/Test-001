@@ -4,28 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VANGUARD - Tactical Fitness Tracker (Standalone)</title>
+    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-chartjs-2@5.2.0/dist/react-chartjs-2.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/date-fns@2.30.0/dist/date-fns.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700&display=swap');
+
         :root {
             --tactical-bg: #121212;
             --tactical-army: #4B5320;
-            --tactical-gold: #C5A059;
             --tactical-silver: #D3D3D3;
+            --tactical-charcoal: #1E1E1E;
             --tactical-red: #991b1b;
         }
+
         body {
             background-color: var(--tactical-bg);
             color: var(--tactical-silver);
-            font-family: 'Inter', sans-serif;
+            font-family: "Inter", sans-serif;
             margin: 0;
             padding: 0;
         }
-        .font-tactical { font-family: 'Space Grotesk', sans-serif; }
+
+        .tactical-card {
+            background-color: var(--tactical-charcoal);
+            border: 1px solid rgba(75, 83, 32, 0.3);
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tactical-button {
+            background-color: var(--tactical-army);
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .tactical-button:hover {
+            background-color: rgba(75, 83, 32, 0.8);
+        }
+
+        .tactical-button:active {
+            transform: scale(0.95);
+        }
+
+        .tactical-input {
+            background-color: var(--tactical-bg);
+            border: 1px solid rgba(75, 83, 32, 0.5);
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            color: var(--tactical-silver);
+            outline: none;
+        }
+
+        .tactical-input:focus {
+            border-color: var(--tactical-army);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4B5320;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5c6628;
+        }
     </style>
 <script src="/_aistudio-iframe.js"></script></head>
 <body>
@@ -34,56 +101,436 @@
     <script type="text/babel">
         window.VANGUARD_DATA = {"logs":[],"completedExercises":{},"week":1,"pyramidIndex":0};
         
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
+        const { 
+            Shield, Target, BarChart3, Timer, ClipboardList, Plus, Trash2, Download, 
+            Play, Pause, RotateCcw, ChevronRight, Activity, Dumbbell, History, 
+            CheckCircle2, Circle 
+        } = LucideReact;
+        const { motion, AnimatePresence } = FramerMotion;
+        const { Line } = ReactChartjs2;
+        const { format, parseISO } = dateFns;
 
-        function App() {
-            const data = window.VANGUARD_DATA || { logs: [], week: 1, pyramidIndex: 0 };
-            const [logs] = useState(data.logs);
-            const [week] = useState(data.week);
-            const [pyramidIndex] = useState(data.pyramidIndex);
+        // Register ChartJS
+        const {
+            Chart: ChartJS,
+            CategoryScale,
+            LinearScale,
+            PointElement,
+            LineElement,
+            Title,
+            Tooltip,
+            Legend,
+            Filler
+        } = Chart;
+
+        ChartJS.register(
+            CategoryScale,
+            LinearScale,
+            PointElement,
+            LineElement,
+            Title,
+            Tooltip,
+            Legend,
+            Filler
+        );
+
+        // --- Constants ---
+        const PYRAMID_SEQUENCE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        const WORKOUT_SCHEDULE = [
+            { day: 1, title: "Upper Body Push", routine: "1-10-1 Push-up Pyramid", details: "1 rep, rest 5s; 2 reps, rest 10s... up to 10, then back down.", exercises: ["Push-up Pyramid (1-10-1)"], type: "pyramid" },
+            { day: 2, title: "Lower Body", routine: "5 Rounds", details: "20 Air Squats, 10 Lunges (each leg), 30 Jumping Jacks.", exercises: ["20 Air Squats", "10 Lunges (each leg)", "30 Jumping Jacks"], type: "rounds" },
+            { day: 3, title: "Active Recovery", routine: "30-min Brisk Walk", details: "World's Greatest Stretch (5 mins).", exercises: ["30-min Brisk Walk", "World's Greatest Stretch"], type: "recovery" },
+            { day: 4, title: "Full Body Smoker", routine: "15-Minute AMRAP", details: "10 Burpees, 20 Mountain Climbers, 15 Sit-ups.", exercises: ["10 Burpees", "20 Mountain Climbers", "15 Sit-ups"], type: "amrap" },
+            { day: 5, title: "Core Stability", routine: "4 Rounds", details: "15 Leg Raises, 20 Russian Twists, 15 Bird-Dogs.", exercises: ["15 Leg Raises", "20 Russian Twists", "15 Bird-Dogs"], type: "rounds" },
+            { day: 6, title: "Saturday Diagnostic", routine: "The Test", details: "Max Push-ups (2m), Max Air Squats (2m), Max Plank Hold.", exercises: ["Max Push-ups (2 min)", "Max Air Squats (2 min)", "Max Plank Hold"], type: "test" },
+            { day: 7, title: "R & R", routine: "Full Recovery", details: "Hydrate, foam roll, and prepare for next week.", exercises: ["Hydrate", "Foam Roll", "Prepare for next week"], type: "rest" }
+        ];
+
+        // --- Components ---
+        const RestTimer = ({ initialSeconds, onComplete, autoStart = false }) => {
+            const [seconds, setSeconds] = useState(isNaN(initialSeconds) ? 0 : initialSeconds);
+            const [isActive, setIsActive] = useState(autoStart && !isNaN(initialSeconds));
+            const alarmRef = useRef(null);
+
+            useEffect(() => {
+                alarmRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            }, []);
+
+            useEffect(() => {
+                const validSeconds = isNaN(initialSeconds) ? 0 : initialSeconds;
+                setSeconds(validSeconds);
+                if (autoStart && !isNaN(initialSeconds)) setIsActive(true);
+            }, [initialSeconds, autoStart]);
+
+            useEffect(() => {
+                let interval = null;
+                if (isActive && seconds > 0) {
+                    interval = setInterval(() => {
+                        setSeconds((s) => s - 1);
+                    }, 1000);
+                } else if (seconds === 0 && isActive) {
+                    setIsActive(false);
+                    if (alarmRef.current) {
+                        alarmRef.current.play().catch(e => console.error("Audio play failed", e));
+                    }
+                    if (onComplete) onComplete();
+                }
+                return () => clearInterval(interval);
+            }, [isActive, seconds, onComplete]);
 
             return (
-                <div className="min-h-screen p-4 max-w-md mx-auto">
-                    <header className="border-b border-[#4B5320] pb-4 mb-6">
-                        <h1 className="text-3xl font-tactical font-black text-[#4B5320] tracking-tighter">VANGUARD <span className="text-[#D3D3D3]">OFFLINE</span></h1>
-                        <p className="text-xs text-[#4B5320] font-bold">TACTICAL DATA EXPORT</p>
+                <div className="flex items-center gap-2 bg-[#121212] p-2 rounded-lg border border-[#4B5320]/30">
+                    <div className={`text-xl font-mono font-bold w-16 ${seconds === 0 ? 'text-[#991b1b] animate-pulse' : 'text-[#4B5320]'}`}>
+                        {Math.floor(seconds / 60).toString().padStart(2, '0')}:{(seconds % 60).toString().padStart(2, '0')}
+                    </div>
+                    <div className="flex-1 flex items-center gap-1">
+                        <button 
+                            onClick={() => isActive ? setSeconds(0) : setIsActive(true)}
+                            disabled={seconds === 0}
+                            className="tactical-button py-1 px-2 disabled:opacity-50 text-[10px]"
+                        >
+                            {isActive ? "I don't need rest" : 'Start Rest'}
+                        </button>
+                        <button 
+                            onClick={() => { setSeconds(initialSeconds); setIsActive(false); }}
+                            className="p-1 text-[#D3D3D3]/50 hover:text-[#D3D3D3]"
+                        >
+                            <RotateCcw size={14} />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const AMRAPTimer = () => {
+            const [timeLeft, setTimeLeft] = useState(15 * 60);
+            const [isActive, setIsActive] = useState(false);
+
+            useEffect(() => {
+                let interval = null;
+                if (isActive && timeLeft > 0) {
+                    interval = setInterval(() => {
+                        setTimeLeft((t) => t - 1);
+                    }, 1000);
+                } else if (timeLeft === 0) {
+                    setIsActive(false);
+                    clearInterval(interval);
+                }
+                return () => clearInterval(interval);
+            }, [isActive, timeLeft]);
+
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            };
+
+            return (
+                <div className="flex flex-col gap-2 bg-[#121212] p-4 rounded-lg border border-[#4B5320]/30">
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs uppercase tracking-widest text-[#4B5320] font-bold">AMRAP Countdown</span>
+                        <Timer size={16} className="text-[#4B5320]" />
+                    </div>
+                    <div className="text-4xl font-mono text-center py-2 font-black tracking-tighter">
+                        {formatTime(timeLeft)}
+                    </div>
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => setIsActive(!isActive)}
+                            className="flex-1 tactical-button flex items-center justify-center gap-2"
+                        >
+                            {isActive ? <Pause size={16} /> : <Play size={16} />}
+                            {isActive ? 'Pause' : 'Start Mission'}
+                        </button>
+                        <button 
+                            onClick={() => { setTimeLeft(15 * 60); setIsActive(false); }}
+                            className="p-2 bg-[#1E1E1E] border border-[#4B5320]/30 rounded hover:bg-[#4B5320]/20"
+                        >
+                            <RotateCcw size={20} />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        function App() {
+            const injectedData = window.VANGUARD_DATA || { logs: [], completedExercises: {}, week: 1, pyramidIndex: 0 };
+            
+            const [activeTab, setActiveTab] = useState('MISSION');
+            const [logs, setLogs] = useState(injectedData.logs);
+            const [completedExercises, setCompletedExercises] = useState(injectedData.completedExercises);
+            const [week, setWeek] = useState(injectedData.week);
+            const [pyramidIndex, setPyramidIndex] = useState(injectedData.pyramidIndex);
+            const [isPyramidResting, setIsPyramidResting] = useState(false);
+            
+            const [showClearModal, setShowClearModal] = useState(false);
+            const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+            const [logToDelete, setLogToDelete] = useState(null);
+            
+            const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0]);
+            const [pushups, setPushups] = useState('');
+            const [squats, setSquats] = useState('');
+            const [plankMin, setPlankMin] = useState('');
+            const [plankSec, setPlankSec] = useState('');
+
+            // Save to local storage (for standalone persistence)
+            useEffect(() => {
+                localStorage.setItem('vanguard_standalone_data', JSON.stringify({ logs, completedExercises, week, pyramidIndex }));
+            }, [logs, completedExercises, week, pyramidIndex]);
+
+            const toggleExercise = (dayIndex, exerciseIndex) => {
+                const key = `${dayIndex}-${exerciseIndex}`;
+                setCompletedExercises(prev => ({ ...prev, [key]: !prev[key] }));
+            };
+
+            const handlePyramidStepComplete = () => {
+                setIsPyramidResting(false);
+                if (pyramidIndex < PYRAMID_SEQUENCE.length - 1) {
+                    setPyramidIndex(prev => prev + 1);
+                } else {
+                    const key = `1-0`;
+                    setCompletedExercises(prev => ({ ...prev, [key]: true }));
+                }
+            };
+
+            const handleLogSubmit = (e) => {
+                e.preventDefault();
+                if (!pushups || !squats || !plankMin || !plankSec) return;
+                const totalPlankSeconds = parseInt(plankMin) * 60 + parseInt(plankSec);
+                const newLog = {
+                    id: Math.random().toString(36).substring(2, 11),
+                    date: logDate,
+                    pushups: parseInt(pushups),
+                    squats: parseInt(squats),
+                    plankSeconds: totalPlankSeconds
+                };
+                setLogs(prev => [...prev, newLog].sort((a, b) => a.date.localeCompare(b.date)));
+                setPushups(''); setSquats(''); setPlankMin(''); setPlankSec('');
+                setActiveTab('INTELLIGENCE');
+            };
+
+            const clearAllData = () => {
+                setLogs([]); setCompletedExercises({}); setWeek(1); setPyramidIndex(0);
+                setShowClearModal(false);
+            };
+
+            const completeMission = () => {
+                setCompletedExercises({}); setWeek(prev => prev + 1); setPyramidIndex(0);
+                setShowIncompleteModal(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const handleMissionComplete = () => {
+                const totalExercises = WORKOUT_SCHEDULE.reduce((acc, day) => acc + day.exercises.length, 0);
+                const completedCount = Object.values(completedExercises).filter(Boolean).length;
+                if (completedCount < totalExercises) {
+                    setShowIncompleteModal(true);
+                } else {
+                    completeMission();
+                }
+            };
+
+            const terminateLog = (id) => {
+                setLogs(prev => prev.filter(l => l.id !== id));
+                setLogToDelete(null);
+            };
+
+            const chartData = {
+                labels: logs.map(l => {
+                    try { return format(parseISO(l.date), 'MMM dd'); }
+                    catch (e) { return l.date; }
+                }),
+                datasets: [
+                    { label: 'Push-ups', data: logs.map(l => l.pushups), borderColor: '#4B5320', backgroundColor: 'rgba(75, 83, 32, 0.2)', fill: true, tension: 0.4, yAxisID: 'y' },
+                    { label: 'Air Squats', data: logs.map(l => l.squats), borderColor: '#D3D3D3', backgroundColor: 'rgba(211, 211, 211, 0.1)', fill: true, tension: 0.4, yAxisID: 'y' },
+                    { label: 'Plank (s)', data: logs.map(l => l.plankSeconds), borderColor: '#991b1b', backgroundColor: 'rgba(153, 27, 27, 0.1)', fill: true, tension: 0.4, yAxisID: 'y1' }
+                ]
+            };
+
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#D3D3D3', font: { weight: 'bold' } } },
+                    tooltip: { backgroundColor: '#1E1E1E', titleColor: '#4B5320', bodyColor: '#D3D3D3', borderColor: '#4B5320', borderWidth: 1 }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
+                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Reps', color: '#4B5320', font: { weight: 'bold' } }, grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
+                    y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Time', color: '#991b1b', font: { weight: 'bold' } }, grid: { drawOnChartArea: false }, ticks: { color: '#D3D3D3', callback: (v) => { const m = Math.floor(v / 60); const s = v % 60; return m > 0 ? `${m}m ${s}s` : `${s}s`; } } }
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden">
+                    <header className="p-6 pt-8 flex flex-col gap-1 border-b border-[#4B5320]/20 bg-[#121212]/80 backdrop-blur-md sticky top-0 z-50">
+                        <div className="flex items-center gap-2">
+                            <Shield color="#4B5320" size={28} />
+                            <h1 className="text-3xl font-black tracking-tighter uppercase italic">Black Ops</h1>
+                        </div>
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#4B5320] font-bold">Military Calisthenics Program</p>
                     </header>
 
-                    <div className="space-y-6">
-                        <section className="bg-[#1a1a1a] p-4 border-l-4 border-[#4B5320]">
-                            <h2 className="text-[#4B5320] font-bold uppercase text-sm mb-2">Mission Status</h2>
-                            <p>Current Week: <span className="text-[#C5A059] font-bold">{week}</span></p>
-                            <p>Pyramid Progress: <span className="text-[#C5A059] font-bold">{pyramidIndex + 1}</span></p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-[#4B5320] font-bold uppercase text-sm mb-4">Mission Reports ({logs.length})</h2>
-                            <div className="space-y-3">
-                                {logs.slice().reverse().map((log, i) => (
-                                    <div key={i} className="bg-[#1a1a1a] p-3 border border-[#4B5320]/30 rounded">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span className="text-[#C5A059] font-mono text-xs">{log.date}</span>
-                                            <span className="bg-[#4B5320]/20 text-[#4B5320] text-[10px] px-2 py-0.5 rounded font-bold uppercase">Verified</span>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-2 text-center">
-                                            <div>
-                                                <div className="text-[10px] text-[#4B5320] uppercase font-bold">Pushups</div>
-                                                <div className="text-lg font-tactical font-bold">{log.pushups}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-[10px] text-[#4B5320] uppercase font-bold">Squats</div>
-                                                <div className="text-lg font-tactical font-bold">{log.squats}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-[10px] text-[#4B5320] uppercase font-bold">Plank</div>
-                                                <div className="text-lg font-tactical font-bold">{Math.floor(log.plankTime / 60)}m {log.plankTime % 60}s</div>
-                                            </div>
-                                        </div>
+                    <main className="flex-1 p-6 pb-24 overflow-y-auto">
+                        <AnimatePresence mode="wait">
+                            {activeTab === 'MISSION' && (
+                                <motion.div key="mission" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h2 className="text-xl font-black uppercase flex items-center gap-2"><Target color="#4B5320" size={20} />The Mission</h2>
+                                        <span className="text-[10px] bg-[#4B5320]/20 text-[#4B5320] px-2 py-1 rounded border border-[#4B5320]/30 font-bold uppercase">WEEK {week.toString().padStart(2, '0')}</span>
                                     </div>
-                                ))}
+                                    <div className="space-y-4">
+                                        {WORKOUT_SCHEDULE.map((day) => (
+                                            <div key={day.day} className="tactical-card overflow-hidden">
+                                                <div className="flex items-stretch">
+                                                    <div className="w-12 shrink-0 bg-[#4B5320] flex flex-col items-center justify-center text-white font-black">
+                                                        <span className="text-[10px] opacity-70">DAY</span>
+                                                        <span className="text-xl leading-none">0{day.day}</span>
+                                                    </div>
+                                                    <div className="flex-1 p-4 min-w-0">
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <h3 className="font-bold text-lg leading-tight">{day.title}</h3>
+                                                            {day.type === 'rest' && <Activity size={16} color="#4B5320" className="opacity-50" />}
+                                                            {day.type === 'amrap' && <Timer size={16} className="text-[#991b1b]" />}
+                                                        </div>
+                                                        <p className="text-[#4B5320] text-xs font-bold uppercase tracking-wider mb-2">{day.routine}</p>
+                                                        <p className="text-sm text-[#D3D3D3]/70 leading-relaxed mb-4">{day.details}</p>
+                                                        <div className="space-y-2 mb-4">
+                                                            {day.exercises.map((exercise, idx) => {
+                                                                const isCompleted = completedExercises[`${day.day}-${idx}`];
+                                                                const isPyramid = day.type === 'pyramid';
+                                                                const currentPyramidReps = PYRAMID_SEQUENCE[pyramidIndex];
+                                                                return (
+                                                                    <div key={idx} className="space-y-3">
+                                                                        <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5">
+                                                                            {isCompleted ? <CheckCircle2 size={18} color="#4B5320" /> : <Circle size={18} color="#4B5320" className="opacity-30" />}
+                                                                            <div className="flex-1 flex items-center justify-between gap-2">
+                                                                                <span className={`text-sm ${isCompleted ? 'text-[#D3D3D3]/40 line-through' : 'text-[#D3D3D3]'}`}>{exercise}</span>
+                                                                                {isCompleted && <span className="text-[7px] font-black uppercase tracking-tighter text-[#4B5320] border-2 border-[#4B5320] px-1 py-0.5 rounded">Objective complete</span>}
+                                                                            </div>
+                                                                        </button>
+                                                                        {isPyramid && !isCompleted && (
+                                                                            <div className="ml-7 space-y-3 border-l border-[#4B5320]/10 pl-4">
+                                                                                <button onClick={() => !isPyramidResting && setIsPyramidResting(true)} disabled={isPyramidResting} className="w-full flex items-center gap-3 text-left group py-1.5 disabled:opacity-50">
+                                                                                    <Circle size={18} className={`shrink-0 ${isPyramidResting ? 'text-[#991b1b] animate-pulse' : 'text-[#4B5320]/30'}`} />
+                                                                                    <span className="text-sm text-[#D3D3D3]">Target: {currentPyramidReps} Push-ups</span>
+                                                                                </button>
+                                                                                {isPyramidResting && (
+                                                                                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                                                                        <RestTimer initialSeconds={currentPyramidReps * 5} autoStart={true} onComplete={handlePyramidStepComplete} />
+                                                                                        <p className="text-[10px] text-[#991b1b] font-bold uppercase tracking-widest mt-2 text-center animate-pulse">Resting: {currentPyramidReps * 5}s</p>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        {day.type === 'amrap' && <div className="mt-4 pt-4 border-t border-[#4B5320]/10"><AMRAPTimer /></div>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="pt-4 pb-8">
+                                        <button onClick={handleMissionComplete} className="w-full tactical-button py-4 flex items-center justify-center gap-3 bg-[#4B5320] text-white shadow-[0_0_20px_rgba(75,83,32,0.3)]">
+                                            <CheckCircle2 size={20} />Mission Complete
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'LOG' && (
+                                <motion.div key="log" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
+                                    <h2 className="text-xl font-black uppercase flex items-center gap-2"><ClipboardList color="#4B5320" size={20} />Log Session</h2>
+                                    <form onSubmit={handleLogSubmit} className="tactical-card p-6 space-y-5">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] uppercase tracking-widest font-bold text-[#4B5320]">Mission Date</label>
+                                            <input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} className="tactical-input w-full" />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] uppercase tracking-widest font-bold text-[#4B5320]">Push-ups</label>
+                                                <input type="number" placeholder="Max Reps" value={pushups} onChange={(e) => setPushups(e.target.value)} className="tactical-input w-full" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] uppercase tracking-widest font-bold text-[#4B5320]">Air Squats</label>
+                                                <input type="number" placeholder="Max Reps" value={squats} onChange={(e) => setSquats(e.target.value)} className="tactical-input w-full" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] uppercase tracking-widest font-bold text-[#4B5320]">Plank Duration</label>
+                                            <div className="flex items-center gap-3">
+                                                <input type="number" placeholder="MM" value={plankMin} onChange={(e) => setPlankMin(e.target.value)} className="tactical-input w-full text-center" />
+                                                <span className="font-bold">:</span>
+                                                <input type="number" placeholder="SS" value={plankSec} onChange={(e) => setPlankSec(e.target.value)} className="tactical-input w-full text-center" />
+                                            </div>
+                                        </div>
+                                        <button type="submit" className="tactical-button w-full py-4">Submit mission report</button>
+                                    </form>
+                                    <div className="space-y-2">
+                                        {logs.slice().reverse().map(log => (
+                                            <div key={log.id} className="tactical-card p-3 flex justify-between items-center text-sm">
+                                                <div>
+                                                    <p className="font-bold text-lg">{format(parseISO(log.date), 'MMMM dd, yyyy')}</p>
+                                                    <p className="text-[15px] text-[#4B5320] font-bold uppercase">P: {log.pushups} | S: {log.squats} | PL: {Math.floor(log.plankSeconds / 60)}:{(log.plankSeconds % 60).toString().padStart(2, '0')}</p>
+                                                </div>
+                                                <button onClick={() => setLogToDelete(log.id)} className="p-3 text-[#991b1b]/80 hover:text-[#991b1b]"><Trash2 size={24} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'INTELLIGENCE' && (
+                                <motion.div key="intelligence" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} className="space-y-6">
+                                    <h2 className="text-xl font-black uppercase flex items-center gap-2"><BarChart3 color="#4B5320" size={20} />Intelligence</h2>
+                                    <div className="tactical-card p-4 h-64">
+                                        {logs.length < 2 ? <div className="h-full flex flex-col items-center justify-center text-center p-4"><Activity className="text-[#4B5320]/20 mb-2" size={48} /><p className="text-sm text-[#D3D3D3]/50">Insufficient data for trend analysis.</p></div> : <Line data={chartData} options={chartOptions} />}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="tactical-card p-4 flex flex-col items-center justify-center text-center"><span className="text-[10px] uppercase font-bold text-[#4B5320] mb-1">Missions Logged</span><span className="text-3xl font-black">{logs.length}</span></div>
+                                        <div className="tactical-card p-4 flex flex-col items-center justify-center text-center"><span className="text-[10px] uppercase font-bold text-[#4B5320] mb-1">Avg Push-ups</span><span className="text-3xl font-black">{logs.length > 0 ? Math.round(logs.reduce((acc, l) => acc + l.pushups, 0) / logs.length) : 0}</span></div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <button onClick={() => setShowClearModal(true)} className="w-full tactical-button bg-[#991b1b]/20 border border-[#991b1b]/50 !text-[#991b1b]">Clear Data</button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </main>
+
+                    {/* Modals (Simplified for standalone) */}
+                    {showClearModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#121212]/90 backdrop-blur-sm">
+                            <div className="tactical-card p-8 max-w-xs w-full text-center space-y-6">
+                                <h3 className="text-xl font-black uppercase text-[#991b1b]">Purge Protocol</h3>
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={clearAllData} className="tactical-button bg-[#991b1b]">Confirm Purge</button>
+                                    <button onClick={() => setShowClearModal(false)} className="text-xs font-bold text-[#D3D3D3]/40">Abort</button>
+                                </div>
                             </div>
-                        </section>
-                    </div>
+                        </div>
+                    )}
+
+                    {logToDelete && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-[#121212]/90 backdrop-blur-sm">
+                            <div className="tactical-card p-8 max-w-xs w-full text-center space-y-6">
+                                <h3 className="text-xl font-black uppercase text-[#991b1b]">Terminate Entry</h3>
+                                <div className="flex flex-col gap-3">
+                                    <button onClick={() => terminateLog(logToDelete)} className="tactical-button bg-[#991b1b]">Confirm</button>
+                                    <button onClick={() => setLogToDelete(null)} className="text-xs font-bold text-[#D3D3D3]/40">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1E1E1E] border-t border-[#4B5320]/30 px-6 py-4 flex justify-between items-center z-50">
+                        <button onClick={() => setActiveTab('MISSION')} className={`flex flex-col items-center gap-1 ${activeTab === 'MISSION' ? 'text-[#4B5320]' : 'text-[#D3D3D3]/40'}`}><Dumbbell size={24} color={activeTab === 'MISSION' ? "#4B5320" : undefined} /><span className="text-[10px] font-black uppercase">Mission</span></button>
+                        <button onClick={() => setActiveTab('LOG')} className={`flex flex-col items-center gap-1 ${activeTab === 'LOG' ? 'text-[#4B5320]' : 'text-[#D3D3D3]/40'}`}><ClipboardList size={24} color={activeTab === 'LOG' ? "#4B5320" : undefined} /><span className="text-[10px] font-black uppercase">Log</span></button>
+                        <button onClick={() => setActiveTab('INTELLIGENCE')} className={`flex flex-col items-center gap-1 ${activeTab === 'INTELLIGENCE' ? 'text-[#4B5320]' : 'text-[#D3D3D3]/40'}`}><BarChart3 size={24} color={activeTab === 'INTELLIGENCE' ? "#4B5320" : undefined} /><span className="text-[10px] font-black uppercase">Intel</span></button>
+                    </nav>
                 </div>
             );
         }
