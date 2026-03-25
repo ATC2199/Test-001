@@ -141,7 +141,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         
-        window.VANGUARD_DATA = {"logs":[],"completedExercises":{},"week":1,"pyramidIndex":0};
+        window.VANGUARD_DATA = {"logs":[],"completedExercises":{"2-1":false,"2-2":false,"2-0":false},"week":1,"pyramidIndex":0};
 
         // --- Icon Component ---
         const Icon = ({ name, size = 24, className = "", style = {} }) => {
@@ -516,8 +516,12 @@
                                                             const currentPyramidReps = PYRAMID_SEQUENCE[pyramidIndex];
                                                             return (
                                                                 <div key={idx} className="space-y-3">
-                                                                    <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5">
-                                                                        {isCompleted ? <Icon name="check-circle-2" size={18} style={{ color: '#4B5320' }} className="text-tactical-army shrink-0" /> : <Icon name="circle" size={18} className="text-tactical-army/30 shrink-0 group-hover:text-tactical-army/60" />}
+                                                                    <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5 focus:outline-none">
+                                                                        {isCompleted ? (
+                                                                            <Icon name="check-circle-2" size={18} style={{ color: '#828d44' }} className="shrink-0" />
+                                                                        ) : (
+                                                                            <Icon name="circle" size={18} style={{ color: '#4B5320' }} className="shrink-0" />
+                                                                        )}
                                                                         <div className="flex-1 flex items-center justify-between gap-2">
                                                                             <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
                                                                             {isCompleted && (
