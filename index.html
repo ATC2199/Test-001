@@ -38,21 +38,6 @@
             border-radius: 0.5rem;
         }
 
-        .tactical-card-silver-tint {
-            background-color: rgba(211, 211, 211, 0.05) !important;
-            border-color: rgba(211, 211, 211, 0.3) !important;
-        }
-
-        .tactical-card-army-tint {
-            background-color: rgba(75, 83, 32, 0.05) !important;
-            border-color: rgba(75, 83, 32, 0.3) !important;
-        }
-
-        .tactical-card-red-tint {
-            background-color: rgba(153, 27, 27, 0.05) !important;
-            border-color: rgba(153, 27, 27, 0.3) !important;
-        }
-
         .tactical-button {
             background-color: var(--tactical-army);
             color: white;
@@ -692,15 +677,15 @@
 
                                 {logs.length > 0 && (
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-army tactical-card-army-tint">
+                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-army" style={{ backgroundColor: 'rgba(75, 83, 32, 0.05)' }}>
                                             <p className="text-[10px] uppercase font-black text-tactical-army tracking-widest mb-1">Personal Best: Push-ups</p>
                                             <p className="text-2xl font-black tracking-tighter">{Math.max(...logs.map(l => l.pushups))}</p>
                                         </div>
-                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-army tactical-card-army-tint">
+                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-army" style={{ backgroundColor: 'rgba(75, 83, 32, 0.05)' }}>
                                             <p className="text-[10px] uppercase font-black text-tactical-army tracking-widest mb-1">Personal Best: Squats</p>
                                             <p className="text-2xl font-black tracking-tighter">{Math.max(...logs.map(l => l.squats))}</p>
                                         </div>
-                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-red tactical-card-red-tint">
+                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-red" style={{ backgroundColor: 'rgba(153, 27, 27, 0.05)' }}>
                                             <p className="text-[10px] uppercase font-black text-tactical-red tracking-widest mb-1">Personal Best: Plank</p>
                                             <p className="text-2xl font-black tracking-tighter">
                                                 {(() => {
@@ -709,7 +694,7 @@
                                                 })()}
                                             </p>
                                         </div>
-                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-silver tactical-card-silver-tint">
+                                        <div className="tactical-card p-4 border-l-4 border-l-tactical-silver" style={{ backgroundColor: 'rgba(211, 211, 211, 0.05)' }}>
                                             <p className="text-[10px] uppercase font-black text-tactical-silver/50 tracking-widest mb-1">Total Missions</p>
                                             <p className="text-2xl font-black tracking-tighter">{logs.length}</p>
                                         </div>
@@ -747,7 +732,7 @@
                                 </div>
 
                                 {logs.length > 0 && (
-                                    <div className="tactical-card p-4 tactical-card-silver-tint">
+                                    <div className="tactical-card p-4" style={{ backgroundColor: 'rgba(211, 211, 211, 0.05)', borderColor: 'rgba(211, 211, 211, 0.3)' }}>
                                         <h3 className="text-xs uppercase font-black text-tactical-silver/50 mb-3 flex items-center gap-2">
                                             <Icon name="bar-chart-3" size={14} />
                                             Average Volume (Last 4 Weeks)
@@ -790,7 +775,7 @@
                                 )}
 
                                 {logs.length > 0 && (
-                                    <div className="tactical-card p-4 tactical-card-army-tint">
+                                    <div className="tactical-card p-4" style={{ backgroundColor: 'rgba(75, 83, 32, 0.05)', borderColor: 'rgba(75, 83, 32, 0.3)' }}>
                                         <h3 className="text-xs uppercase font-black text-tactical-army mb-3 flex items-center gap-2">
                                             <Icon name="shield" size={14} />
                                             Cumulative Volume
