@@ -659,16 +659,25 @@
                     </main>
 
                     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-6 py-4 flex justify-between items-center z-50">
-                        <button onClick={() => setActiveTab('MISSION')} className={`flex flex-col items-center gap-1 ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="dumbbell" size={24} className={activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'} />
+                        <button 
+                            onClick={() => setActiveTab('MISSION')} 
+                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                        >
+                            <Icon name="dumbbell" size={24} />
                             <span className="text-[10px] font-black uppercase">Mission</span>
                         </button>
-                        <button onClick={() => setActiveTab('LOG')} className={`flex flex-col items-center gap-1 ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="clipboard-list" size={24} className={activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'} />
+                        <button 
+                            onClick={() => setActiveTab('LOG')} 
+                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                        >
+                            <Icon name="clipboard-list" size={24} />
                             <span className="text-[10px] font-black uppercase">Log</span>
                         </button>
-                        <button onClick={() => setActiveTab('INTELLIGENCE')} className={`flex flex-col items-center gap-1 ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}>
-                            <Icon name="bar-chart-3" size={24} className={activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'} />
+                        <button 
+                            onClick={() => setActiveTab('INTELLIGENCE')} 
+                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                        >
+                            <Icon name="bar-chart-3" size={24} />
                             <span className="text-[10px] font-black uppercase">Intel</span>
                         </button>
                     </nav>
