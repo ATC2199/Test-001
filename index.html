@@ -644,24 +644,69 @@ Tips for Beginners:
                                                         {day.exercises.map((exercise, idx) => {
                                                             const isCompleted = completedExercises[`${day.day}-${idx}`];
                                                             const isPyramid = day.type === 'pyramid';
+                                                            const isTest = day.type === 'test';
                                                             const currentPyramidReps = PYRAMID_SEQUENCE[pyramidIndex];
                                                             return (
                                                                 <div key={idx} className="space-y-3">
-                                                                    <button onClick={() => toggleExercise(day.day, idx)} className="w-full flex items-center gap-3 text-left group py-1.5 focus:outline-none">
-                                                                        {isCompleted ? (
-                                                                            <Icon name="check-circle-2" size={18} color="#828d44" className="shrink-0" />
-                                                                        ) : (
-                                                                            <Icon name="circle" size={18} color="#4B5320" className="shrink-0" />
-                                                                        )}
+                                                                    <div className="w-full flex items-center gap-3 text-left group py-1.5">
+                                                                        <button onClick={() => toggleExercise(day.day, idx)} className="focus:outline-none">
+                                                                            {isCompleted ? (
+                                                                                <Icon name="check-circle-2" size={18} color="#828d44" className="shrink-0" />
+                                                                            ) : (
+                                                                                <Icon name="circle" size={18} color="#4B5320" className="shrink-0" />
+                                                                            )}
+                                                                        </button>
                                                                         <div className="flex-1 flex items-center justify-between gap-2">
                                                                             <span className={`text-sm transition-colors ${isCompleted ? 'text-tactical-silver/40 line-through' : 'text-tactical-silver'} truncate`}>{exercise}</span>
+                                                                            
+                                                                            {isTest && !isCompleted && (
+                                                                                <div className="flex items-center gap-2 shrink-0">
+                                                                                    {idx === 0 && (
+                                                                                        <input 
+                                                                                            type="number" 
+                                                                                            placeholder="Reps" 
+                                                                                            value={pushups} 
+                                                                                            onChange={(e) => setPushups(e.target.value)} 
+                                                                                            className="bg-white/5 border border-tactical-army/30 text-white p-1 rounded w-16 text-center text-xs focus:outline-none focus:border-tactical-army" 
+                                                                                        />
+                                                                                    )}
+                                                                                    {idx === 1 && (
+                                                                                        <input 
+                                                                                            type="number" 
+                                                                                            placeholder="Reps" 
+                                                                                            value={squats} 
+                                                                                            onChange={(e) => setSquats(e.target.value)} 
+                                                                                            className="bg-white/5 border border-tactical-army/30 text-white p-1 rounded w-16 text-center text-xs focus:outline-none focus:border-tactical-army" 
+                                                                                        />
+                                                                                    )}
+                                                                                    {idx === 2 && (
+                                                                                        <div className="flex gap-1">
+                                                                                            <input 
+                                                                                                type="number" 
+                                                                                                placeholder="M" 
+                                                                                                value={plankMin} 
+                                                                                                onChange={(e) => setPlankMin(e.target.value)} 
+                                                                                                className="bg-white/5 border border-tactical-army/30 text-white p-1 rounded w-10 text-center text-xs focus:outline-none focus:border-tactical-army" 
+                                                                                            />
+                                                                                            <input 
+                                                                                                type="number" 
+                                                                                                placeholder="S" 
+                                                                                                value={plankSec} 
+                                                                                                onChange={(e) => setPlankSec(e.target.value)} 
+                                                                                                className="bg-white/5 border border-tactical-army/30 text-white p-1 rounded w-10 text-center text-xs focus:outline-none focus:border-tactical-army" 
+                                                                                            />
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+
                                                                             {isCompleted && (
                                                                                 <span className="text-[7px] font-black uppercase tracking-tighter text-tactical-army border-2 border-tactical-army px-1 py-0.5 rounded shrink-0 whitespace-nowrap bg-tactical-army/5 -rotate-12">
                                                                                     Objective complete
                                                                                 </span>
                                                                             )}
                                                                         </div>
-                                                                    </button>
+                                                                    </div>
                                                                     {isPyramid && !isCompleted && (
                                                                         <div className="ml-7 space-y-3 border-l border-tactical-army/10 pl-4">
                                                                             <button onClick={() => setIsPyramidResting(true)} disabled={isPyramidResting} className="w-full flex items-center gap-3 text-left group py-1.5 disabled:opacity-50">
@@ -675,6 +720,18 @@ Tips for Beginners:
                                                             );
                                                         })}
                                                     </div>
+                                                    {day.type === 'test' && (
+                                                        <div className="px-4 pb-4">
+                                                            <button 
+                                                                onClick={submitDiagnostic}
+                                                                disabled={!pushups || !squats || !plankMin || !plankSec}
+                                                                className="w-full tactical-button py-3 text-xs"
+                                                            >
+                                                                <Icon name="clipboard-list" size={14} />
+                                                                Submit Diagnostic Report
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                     {day.type === 'pyramid' && (
                                                         <div className="mt-2 text-[10px] text-tactical-army/40 font-bold uppercase tracking-widest flex justify-between">
                                                             <span>Progress: {pyramidIndex + 1} / {PYRAMID_SEQUENCE.length}</span>
@@ -799,6 +856,20 @@ Tips for Beginners:
 
                                 <div className="space-y-4">
                                     <div className="tactical-card p-4 h-64">
+                                        {pyramidLogs.length < 2 ? (
+                                            <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                                                <Icon name="dumbbell" size={48} className="text-tactical-army/20 mb-2" />
+                                                <p className="text-sm text-tactical-silver/50">Insufficient data for pyramid trend. Complete at least 2 weeks.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="h-full">
+                                                <p className="text-[10px] uppercase font-black text-tactical-army tracking-widest mb-2">Pyramid Volume Trend</p>
+                                                <canvas ref={pyramidChartRef}></canvas>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="tactical-card p-4 h-64">
                                         {logs.length < 2 ? (
                                             <div className="h-full flex flex-col items-center justify-center text-center p-4">
                                                 <Icon name="activity" size={48} className="text-tactical-army/20 mb-2" />
@@ -822,20 +893,6 @@ Tips for Beginners:
                                             <div className="h-full">
                                                 <p className="text-[10px] uppercase font-black text-tactical-red tracking-widest mb-2">Endurance Trends (Plank)</p>
                                                 <canvas ref={plankChartRef}></canvas>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="tactical-card p-4 h-64">
-                                        {pyramidLogs.length < 2 ? (
-                                            <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                                                <Icon name="activity" size={48} className="text-tactical-army/20 mb-2" />
-                                                <p className="text-sm text-tactical-silver/50">Insufficient data for trend analysis. Log at least 2 pyramid sessions.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="h-full">
-                                                <p className="text-[10px] uppercase font-black text-tactical-army tracking-widest mb-2">Pyramid Volume Trend</p>
-                                                <canvas ref={pyramidChartRef}></canvas>
                                             </div>
                                         )}
                                     </div>
@@ -986,34 +1043,34 @@ Tips for Beginners:
                         )}
                     </main>
 
-                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-6 py-4 flex justify-between items-center z-50">
+                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-4 py-3 flex justify-between items-start z-50">
                         <button 
                             onClick={() => setActiveTab('MISSION')} 
-                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                            className={`flex flex-col items-center gap-1 transition-colors flex-1 ${activeTab === 'MISSION' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="dumbbell" size={24} color={activeTab === 'MISSION' ? '#4B5320' : ''} />
-                            <span className="text-[10px] font-black uppercase">Mission</span>
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('FIELD_MANUAL')} 
-                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'FIELD_MANUAL' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
-                        >
-                            <Icon name="book-open" size={24} color={activeTab === 'FIELD_MANUAL' ? '#4B5320' : ''} />
-                            <span className="text-[10px] font-black uppercase">Manual</span>
+                            <Icon name="dumbbell" size={22} color={activeTab === 'MISSION' ? '#4B5320' : ''} />
+                            <span className="text-[10px] font-black uppercase text-center leading-tight">Mission</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('LOG')} 
-                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                            className={`flex flex-col items-center gap-1 transition-colors flex-1 ${activeTab === 'LOG' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="clipboard-list" size={24} color={activeTab === 'LOG' ? '#4B5320' : ''} />
-                            <span className="text-[10px] font-black uppercase">Log</span>
+                            <Icon name="clipboard-list" size={22} color={activeTab === 'LOG' ? '#4B5320' : ''} />
+                            <span className="text-[10px] font-black uppercase text-center leading-tight">Mission Logs</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('INTELLIGENCE')} 
-                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                            className={`flex flex-col items-center gap-1 transition-colors flex-1 ${activeTab === 'INTELLIGENCE' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
                         >
-                            <Icon name="bar-chart-3" size={24} color={activeTab === 'INTELLIGENCE' ? '#4B5320' : ''} />
-                            <span className="text-[10px] font-black uppercase">Intel</span>
+                            <Icon name="bar-chart-3" size={22} color={activeTab === 'INTELLIGENCE' ? '#4B5320' : ''} />
+                            <span className="text-[10px] font-black uppercase text-center leading-tight">Intel</span>
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('FIELD_MANUAL')} 
+                            className={`flex flex-col items-center gap-1 transition-colors flex-1 ${activeTab === 'FIELD_MANUAL' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                        >
+                            <Icon name="book-open" size={22} color={activeTab === 'FIELD_MANUAL' ? '#4B5320' : ''} />
+                            <span className="text-[10px] font-black uppercase text-center leading-tight">Field Manual</span>
                         </button>
                     </nav>
 
