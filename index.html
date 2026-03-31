@@ -379,14 +379,14 @@ Tips for Beginners:
                     if (iPyramidLogs) setPyramidLogs(iPyramidLogs);
                     if (iCompleted) setCompletedExercises(iCompleted);
                     if (iWeek) setWeek(iWeek);
-                    if (iPyramid) setPyramidIndex(iPyramid);
+                    if (iPyramid !== undefined) setPyramidIndex(iPyramid);
                 } else {
                     const savedLogs = localStorage.getItem('blackops_logs');
-                    if (savedLogs) setLogs(JSON.parse(savedLogs));
+                    try { if (savedLogs) setLogs(JSON.parse(savedLogs)); } catch (e) { console.error(e); }
                     const savedPyramidLogs = localStorage.getItem('blackops_pyramid_logs');
-                    if (savedPyramidLogs) setPyramidLogs(JSON.parse(savedPyramidLogs));
+                    try { if (savedPyramidLogs) setPyramidLogs(JSON.parse(savedPyramidLogs)); } catch (e) { console.error(e); }
                     const savedCompleted = localStorage.getItem('blackops_completed');
-                    if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted));
+                    try { if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted)); } catch (e) { console.error(e); }
                     const savedWeek = localStorage.getItem('blackops_week');
                     if (savedWeek) setWeek(parseInt(savedWeek));
                     const savedPyramid = localStorage.getItem('blackops_pyramid_index');
@@ -402,107 +402,136 @@ Tips for Beginners:
 
             // Chart rendering
             useEffect(() => {
-                if (activeTab === 'INTELLIGENCE' && strengthChartRef.current && logs.length >= 2) {
-                    if (strengthChartInstance.current) strengthChartInstance.current.destroy();
-                    
-                    const ctx = strengthChartRef.current.getContext('2d');
-                    strengthChartInstance.current = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: logs.map(l => {
-                                const d = new Date(l.date);
-                                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                            }),
-                            datasets: [
-                                {
-                                    label: 'Push-ups',
-                                    data: logs.map(l => l.pushups),
-                                    borderColor: '#4B5320',
-                                    backgroundColor: 'rgba(75, 83, 32, 0.2)',
-                                    fill: true,
-                                    tension: 0.4,
+                if (activeTab === 'INTELLIGENCE') {
+                    // Strength Chart
+                    if (strengthChartRef.current && logs.length >= 2) {
+                        if (strengthChartInstance.current) strengthChartInstance.current.destroy();
+                        const ctx = strengthChartRef.current.getContext('2d');
+                        strengthChartInstance.current = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: logs.map(l => {
+                                    const d = new Date(l.date);
+                                    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                                }),
+                                datasets: [
+                                    {
+                                        label: 'Push-ups',
+                                        data: logs.map(l => l.pushups),
+                                        borderColor: '#4B5320',
+                                        backgroundColor: 'rgba(75, 83, 32, 0.2)',
+                                        fill: true,
+                                        tension: 0.4,
+                                    },
+                                    {
+                                        label: 'Air Squats',
+                                        data: logs.map(l => l.squats),
+                                        borderColor: '#D3D3D3',
+                                        backgroundColor: 'rgba(211, 211, 211, 0.1)',
+                                        fill: true,
+                                        tension: 0.4,
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                        labels: { color: '#D3D3D3', font: { weight: 'bold' } }
+                                    }
                                 },
-                                {
-                                    label: 'Air Squats',
-                                    data: logs.map(l => l.squats),
-                                    borderColor: '#D3D3D3',
-                                    backgroundColor: 'rgba(211, 211, 211, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                    labels: { color: '#D3D3D3', font: { weight: 'bold' } }
-                                }
-                            },
-                            scales: {
-                                x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
-                                y: {
-                                    type: 'linear',
-                                    display: true,
-                                    grid: { color: 'rgba(211, 211, 211, 0.05)' },
-                                    ticks: { color: '#D3D3D3' }
+                                scales: {
+                                    x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
+                                    y: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } }
                                 }
                             }
-                        }
-                    });
-                }
-                
-                if (activeTab === 'INTELLIGENCE' && plankChartRef.current && logs.length >= 2) {
-                    if (plankChartInstance.current) plankChartInstance.current.destroy();
-                    
-                    const ctx = plankChartRef.current.getContext('2d');
-                    plankChartInstance.current = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: logs.map(l => {
-                                const d = new Date(l.date);
-                                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-                            }),
-                            datasets: [
-                                {
-                                    label: 'Plank (s)',
-                                    data: logs.map(l => l.plankSeconds),
-                                    borderColor: '#991b1b',
-                                    backgroundColor: 'rgba(153, 27, 27, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                    labels: { color: '#D3D3D3', font: { weight: 'bold' } }
-                                }
+                        });
+                    }
+
+                    // Plank Chart
+                    if (plankChartRef.current && logs.length >= 2) {
+                        if (plankChartInstance.current) plankChartInstance.current.destroy();
+                        const ctx = plankChartRef.current.getContext('2d');
+                        plankChartInstance.current = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: logs.map(l => {
+                                    const d = new Date(l.date);
+                                    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                                }),
+                                datasets: [
+                                    {
+                                        label: 'Plank (s)',
+                                        data: logs.map(l => l.plankSeconds),
+                                        borderColor: '#991b1b',
+                                        backgroundColor: 'rgba(153, 27, 27, 0.1)',
+                                        fill: true,
+                                        tension: 0.4,
+                                    }
+                                ]
                             },
-                            scales: {
-                                x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
-                                y: {
-                                    type: 'linear',
-                                    display: true,
-                                    grid: { color: 'rgba(211, 211, 211, 0.05)' },
-                                    ticks: { color: '#D3D3D3' }
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                        labels: { color: '#D3D3D3', font: { weight: 'bold' } }
+                                    }
+                                },
+                                scales: {
+                                    x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
+                                    y: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
+
+                    // Pyramid Chart
+                    if (pyramidChartRef.current && pyramidLogs.length >= 2) {
+                        if (pyramidChartInstance.current) pyramidChartInstance.current.destroy();
+                        const ctx = pyramidChartRef.current.getContext('2d');
+                        pyramidChartInstance.current = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: pyramidLogs.map(l => `Week ${l.week}`),
+                                datasets: [
+                                    {
+                                        label: 'Total Reps',
+                                        data: pyramidLogs.map(l => l.totalReps),
+                                        borderColor: '#4B5320',
+                                        backgroundColor: 'rgba(75, 83, 32, 0.2)',
+                                        fill: true,
+                                        tension: 0.4,
+                                    }
+                                ]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                        labels: { color: '#D3D3D3', font: { weight: 'bold' } }
+                                    }
+                                },
+                                scales: {
+                                    x: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } },
+                                    y: { grid: { color: 'rgba(211, 211, 211, 0.05)' }, ticks: { color: '#D3D3D3' } }
+                                }
+                            }
+                        });
+                    }
                 }
 
-                return () => { 
-                    if (strengthChartInstance.current) strengthChartInstance.current.destroy(); 
-                    if (plankChartInstance.current) plankChartInstance.current.destroy(); 
+                return () => {
+                    if (strengthChartInstance.current) strengthChartInstance.current.destroy();
+                    if (plankChartInstance.current) plankChartInstance.current.destroy();
+                    if (pyramidChartInstance.current) pyramidChartInstance.current.destroy();
                 };
-            }, [activeTab, logs]);
+            }, [activeTab, logs, pyramidLogs]);
 
             const logPyramidProgress = (currentIndex) => {
                 const lastRepRange = currentIndex > 0 ? PYRAMID_SEQUENCE[Math.min(currentIndex - 1, PYRAMID_SEQUENCE.length - 1)] : 0;
@@ -551,8 +580,7 @@ Tips for Beginners:
                 }
             };
 
-            const handleLogSubmit = (e) => {
-                e.preventDefault();
+            const submitDiagnostic = () => {
                 if (!pushups || !squats || !plankMin || !plankSec) return;
                 const totalPlankSeconds = parseInt(plankMin) * 60 + parseInt(plankSec);
                 const newLog = { 
@@ -565,6 +593,11 @@ Tips for Beginners:
                 setLogs(prev => [...prev, newLog].sort((a, b) => a.date.localeCompare(b.date)));
                 setPushups(''); setSquats(''); setPlankMin(''); setPlankSec('');
                 setActiveTab('INTELLIGENCE');
+            };
+
+            const handleLogSubmit = (e) => {
+                e.preventDefault();
+                submitDiagnostic();
             };
 
             const clearAllData = () => {
