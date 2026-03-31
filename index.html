@@ -144,7 +144,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         
-        window.VANGUARD_DATA = {"logs":[{"id":"1774478172616","date":"2026-03-25","pushups":10,"squats":15,"plankSeconds":20},{"id":"1774989006198","date":"2026-03-31","pushups":15,"squats":40,"plankSeconds":105},{"id":"1774478227501","date":"2026-04-01","pushups":14,"squats":19,"plankSeconds":40},{"id":"1774478320221","date":"2026-04-08","pushups":25,"squats":17,"plankSeconds":30}],"completedExercises":{"1-0":true},"week":7,"pyramidIndex":10};
+        window.VANGUARD_DATA = {"logs":[{"id":"1774478172616","date":"2026-03-25","pushups":10,"squats":15,"plankSeconds":20},{"id":"1774989006198","date":"2026-03-31","pushups":15,"squats":40,"plankSeconds":105},{"id":"1774478227501","date":"2026-04-01","pushups":14,"squats":19,"plankSeconds":40},{"id":"1774478320221","date":"2026-04-08","pushups":25,"squats":17,"plankSeconds":30}],"pyramidLogs":[{"week":1,"lastRepRange":4,"totalReps":10},{"week":2,"lastRepRange":5,"totalReps":15},{"week":3,"lastRepRange":8,"totalReps":36},{"week":4,"lastRepRange":8,"totalReps":72},{"week":5,"lastRepRange":2,"totalReps":3},{"week":6,"lastRepRange":1,"totalReps":100},{"week":7,"lastRepRange":10,"totalReps":55}],"completedExercises":{"1-0":true},"week":7,"pyramidIndex":10};
 
         // --- Icon Component ---
         const Icon = ({ name, size = 24, className = "", style = {}, color = "" }) => {
@@ -172,12 +172,67 @@
         const PYRAMID_SEQUENCE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
         const WORKOUT_SCHEDULE = [
             { day: 1, title: "Upper Body Push", routine: "1-10-1 Push-up Pyramid", details: "1 rep, rest 5s; 2 reps, rest 10s... up to 10, then back down.", exercises: ["Push-up Pyramid (1-10-1)"], type: "pyramid" },
-            { day: 2, title: "Lower Body", routine: "5 Rounds", details: "20 Air Squats, 10 Lunges (each leg), 30 Jumping Jacks.", exercises: ["20 Air Squats", "10 Lunges (each leg)", "30 Jumping Jacks"], type: "rounds" },
+            { day: 2, title: "Lower Body", routine: "5 Rounds", details: "20 Air Squats, 10 Lunges (each leg), 30 Jumping Jacks.", exercises: ["20 Air Squats", "10 Lunges (each leg), 30 Jumping Jacks"], type: "rounds" },
             { day: 3, title: "Active Recovery", routine: "30-min Brisk Walk", details: "World's Greatest Stretch (5 mins).", exercises: ["30-min Brisk Walk", "World's Greatest Stretch"], type: "recovery" },
             { day: 4, title: "Full Body Smoker", routine: "15-Minute AMRAP", details: "10 Burpees, 20 Mountain Climbers, 15 Sit-ups.", exercises: ["10 Burpees", "20 Mountain Climbers", "15 Sit-ups"], type: "amrap" },
             { day: 5, title: "Core Stability", routine: "4 Rounds", details: "15 Leg Raises, 20 Russian Twists, 15 Bird-Dogs.", exercises: ["15 Leg Raises", "20 Russian Twists", "15 Bird-Dogs"], type: "rounds" },
             { day: 6, title: "Saturday Diagnostic", routine: "The Test", details: "Max Push-ups (2m), Max Air Squats (2m), Max Plank Hold.", exercises: ["Max Push-ups (2 min)", "Max Air Squats (2 min)", "Max Plank Hold"], type: "test" },
             { day: 7, title: "R & R", routine: "Full Recovery", details: "Hydrate, foam roll, and prepare for next week.", exercises: ["Hydrate", "Foam Roll", "Prepare for next week"], type: "rest" }
+        ];
+
+        const EXERCISE_INSTRUCTIONS = [
+            { 
+                name: "Push-up Pyramid (1-10-1)",
+                instructions: `Pyramid Structure: Start with 1 rep, then rest. Perform 2 reps, then rest. Continue increasing by 1 rep until you reach 10. Once 10 is reached, descend back to 1 rep (9, 8, 7... 1). Rest periods should be short (approx. 5-10 seconds per rep performed).
+
+Starting Position: High plank position, hands slightly wider than shoulders, fingers forward, wrists under shoulders.
+
+Body Alignment: Keep back flat, neck neutral (look slightly ahead, not down), and glutes/abs tight to prevent hips from sagging.
+
+Movement: Inhale while lowering slowly, keeping elbows tucked at 45 degrees (not flared).
+
+Range of Motion: Lower until the chest is near the floor; push back up to a full extension.
+
+Common Mistakes: Avoid shrugging shoulders, allowing hips to sag, or pointing elbows directly out to the sides.
+
+Modifications for Beginners:
+- Incline Push-ups: Place hands on a bench, wall, or stairs to reduce body weight resistance.
+- Knee Push-ups: Perform the movement with knees on the ground, keeping a straight line from head to knees.`
+            },
+            { 
+                name: "Air Squats",
+                instructions: `Stance: Feet shoulder-width apart or slightly wider, with toes pointing forward or slightly outward.
+
+Initiation: Begin the movement by sending your hips back and down, as if sitting in an invisible chair, rather than starting with the knees.
+
+Chest and Back: Maintain a "proud" chest, keeping it upright, and keep the back straight (lumbar curve maintained).
+
+Depth: Lower until your hips are below the top of your knees (below parallel).
+
+Knees: Ensure knees track outward over the toes and do not collapse inward.
+
+Heels: Keep the entire foot, especially the heels, firmly on the ground.
+
+Finish: Rise by pushing through your heels, extending the hips and knees to full extension at the top.
+
+Common Mistakes: Avoid rounding the back (loss of lumbar curve), allowing knees to collapse inward, or lifting heels off the ground. Ensure the hip crease passes below the knee for full benefit.
+
+Tips for Beginners:
+- Use a Target: Use a chair or bench to ensure you are reaching the correct depth.
+- Counterbalance: Extend your arms forward as you descend to help keep your back straight.
+- Mobility: Focus on hip and ankle mobility to improve depth.`
+            },
+            { name: "Lunges" },
+            { name: "Jumping Jacks" },
+            { name: "Brisk Walk" },
+            { name: "World's Greatest Stretch" },
+            { name: "Burpees" },
+            { name: "Mountain Climbers" },
+            { name: "Sit-ups" },
+            { name: "Leg Raises" },
+            { name: "Russian Twists" },
+            { name: "Bird-Dogs" },
+            { name: "Plank Hold" }
         ];
 
         // --- Components ---
@@ -292,7 +347,9 @@
         function App() {
             const [activeTab, setActiveTab] = useState('MISSION');
             const [logs, setLogs] = useState([]);
+            const [pyramidLogs, setPyramidLogs] = useState([]);
             const [completedExercises, setCompletedExercises] = useState({});
+            const [expandedExercise, setExpandedExercise] = useState(null);
             const [week, setWeek] = useState(1);
             const [pyramidIndex, setPyramidIndex] = useState(0);
             const [isPyramidResting, setIsPyramidResting] = useState(false);
@@ -309,20 +366,25 @@
 
             const strengthChartRef = useRef(null);
             const plankChartRef = useRef(null);
+            const pyramidChartRef = useRef(null);
             const strengthChartInstance = useRef(null);
             const plankChartInstance = useRef(null);
+            const pyramidChartInstance = useRef(null);
 
             useEffect(() => {
                 // Load injected data if available
                 if (window.VANGUARD_DATA) {
-                    const { logs: iLogs, completedExercises: iCompleted, week: iWeek, pyramidIndex: iPyramid } = window.VANGUARD_DATA;
+                    const { logs: iLogs, pyramidLogs: iPyramidLogs, completedExercises: iCompleted, week: iWeek, pyramidIndex: iPyramid } = window.VANGUARD_DATA;
                     if (iLogs) setLogs(iLogs);
+                    if (iPyramidLogs) setPyramidLogs(iPyramidLogs);
                     if (iCompleted) setCompletedExercises(iCompleted);
                     if (iWeek) setWeek(iWeek);
                     if (iPyramid) setPyramidIndex(iPyramid);
                 } else {
                     const savedLogs = localStorage.getItem('blackops_logs');
                     if (savedLogs) setLogs(JSON.parse(savedLogs));
+                    const savedPyramidLogs = localStorage.getItem('blackops_pyramid_logs');
+                    if (savedPyramidLogs) setPyramidLogs(JSON.parse(savedPyramidLogs));
                     const savedCompleted = localStorage.getItem('blackops_completed');
                     if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted));
                     const savedWeek = localStorage.getItem('blackops_week');
@@ -333,6 +395,7 @@
             }, []);
 
             useEffect(() => { localStorage.setItem('blackops_logs', JSON.stringify(logs)); }, [logs]);
+            useEffect(() => { localStorage.setItem('blackops_pyramid_logs', JSON.stringify(pyramidLogs)); }, [pyramidLogs]);
             useEffect(() => { localStorage.setItem('blackops_completed', JSON.stringify(completedExercises)); }, [completedExercises]);
             useEffect(() => { localStorage.setItem('blackops_week', week.toString()); }, [week]);
             useEffect(() => { localStorage.setItem('blackops_pyramid_index', pyramidIndex.toString()); }, [pyramidIndex]);
@@ -441,9 +504,39 @@
                 };
             }, [activeTab, logs]);
 
+            const logPyramidProgress = (currentIndex) => {
+                const lastRepRange = currentIndex > 0 ? PYRAMID_SEQUENCE[Math.min(currentIndex - 1, PYRAMID_SEQUENCE.length - 1)] : 0;
+                const totalReps = PYRAMID_SEQUENCE.slice(0, currentIndex).reduce((a, b) => a + b, 0);
+                
+                const newPyramidLog = {
+                    week,
+                    lastRepRange,
+                    totalReps
+                };
+
+                setPyramidLogs(prev => {
+                    const filtered = prev.filter(l => l.week !== week);
+                    return [...filtered, newPyramidLog].sort((a, b) => a.week - b.week);
+                });
+            };
+
+            const removePyramidProgress = () => {
+                setPyramidLogs(prev => prev.filter(l => l.week !== week));
+            };
+
             const toggleExercise = (dayIndex, exerciseIndex) => {
                 const key = `${dayIndex}-${exerciseIndex}`;
-                setCompletedExercises(prev => ({ ...prev, [key]: !prev[key] }));
+                setCompletedExercises(prev => {
+                    const newState = !prev[key];
+                    if (key === '1-0') {
+                        if (newState) {
+                            logPyramidProgress(pyramidIndex);
+                        } else {
+                            removePyramidProgress();
+                        }
+                    }
+                    return { ...prev, [key]: newState };
+                });
             };
 
             const handlePyramidStepComplete = () => {
@@ -451,7 +544,10 @@
                 if (pyramidIndex < PYRAMID_SEQUENCE.length - 1) {
                     setPyramidIndex(prev => prev + 1);
                 } else {
+                    const finalIndex = PYRAMID_SEQUENCE.length;
+                    setPyramidIndex(finalIndex);
                     setCompletedExercises(prev => ({ ...prev, '1-0': true }));
+                    logPyramidProgress(finalIndex);
                 }
             };
 
@@ -729,6 +825,20 @@
                                             </div>
                                         )}
                                     </div>
+
+                                    <div className="tactical-card p-4 h-64">
+                                        {pyramidLogs.length < 2 ? (
+                                            <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                                                <Icon name="activity" size={48} className="text-tactical-army/20 mb-2" />
+                                                <p className="text-sm text-tactical-silver/50">Insufficient data for trend analysis. Log at least 2 pyramid sessions.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="h-full">
+                                                <p className="text-[10px] uppercase font-black text-tactical-army tracking-widest mb-2">Pyramid Volume Trend</p>
+                                                <canvas ref={pyramidChartRef}></canvas>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {logs.length > 0 && (
@@ -801,6 +911,10 @@
                                                     })()}
                                                 </span>
                                             </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-tactical-silver/60">Total Pyramid Volume</span>
+                                                <span className="font-bold">{pyramidLogs.reduce((acc, curr) => acc + curr.totalReps, 0)} reps</span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -820,6 +934,56 @@
                                 </div>
                             </div>
                         )}
+                        {activeTab === 'FIELD_MANUAL' && (
+                            <div className="space-y-6 fade-in">
+                                <h2 className="text-xl font-black uppercase flex items-center gap-2">
+                                    <Icon name="book-open" size={20} color="#4B5320" className="shrink-0" />
+                                    Field Manual
+                                </h2>
+                                <p className="text-xs text-tactical-silver/50 uppercase tracking-widest font-bold">Standard Operating Procedures for all movements</p>
+                                
+                                <div className="space-y-3">
+                                    {EXERCISE_INSTRUCTIONS.map((ex, idx) => {
+                                        const hasInstructions = !!ex.instructions;
+                                        const isExpanded = expandedExercise === ex.name;
+                                        
+                                        return (
+                                            <div key={idx} className="tactical-card overflow-hidden">
+                                                <button 
+                                                    onClick={() => hasInstructions && setExpandedExercise(isExpanded ? null : ex.name)}
+                                                    className={`w-full p-4 flex justify-between items-center text-left transition-colors ${hasInstructions ? 'hover:bg-tactical-army/5 cursor-pointer' : 'cursor-default'}`}
+                                                >
+                                                    <span className="font-bold text-sm uppercase tracking-tight text-tactical-army">{ex.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        {!hasInstructions && (
+                                                            <div className="border-2 border-tactical-red/40 px-2 py-0.5 rounded rotate-[-12deg] bg-tactical-red/5">
+                                                                <span className="text-[10px] font-black text-tactical-red uppercase tracking-tighter">Classified</span>
+                                                            </div>
+                                                        )}
+                                                        {hasInstructions && (
+                                                            isExpanded ? <Icon name="chevron-up" size={16} className="text-tactical-army" /> : <Icon name="chevron-down" size={16} className="text-tactical-army" />
+                                                        )}
+                                                    </div>
+                                                </button>
+                                                {hasInstructions && isExpanded && (
+                                                    <div className="px-4 pb-4 border-t border-tactical-army/10 pt-3 fade-in">
+                                                        <p className="text-xs text-tactical-silver/80 leading-relaxed italic whitespace-pre-line">
+                                                            {ex.instructions}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                
+                                <div className="p-4 border-2 border-dashed border-tactical-army/20 rounded-lg bg-tactical-army/5">
+                                    <p className="text-[10px] text-center text-tactical-army font-black uppercase tracking-[0.2em]">
+                                        Discipline is the foundation of excellence. Execute every rep with precision.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </main>
 
                     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-tactical-charcoal border-t border-tactical-army/30 px-6 py-4 flex justify-between items-center z-50">
@@ -829,6 +993,13 @@
                         >
                             <Icon name="dumbbell" size={24} color={activeTab === 'MISSION' ? '#4B5320' : ''} />
                             <span className="text-[10px] font-black uppercase">Mission</span>
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('FIELD_MANUAL')} 
+                            className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'FIELD_MANUAL' ? 'text-tactical-army' : 'text-tactical-silver/40'}`}
+                        >
+                            <Icon name="book-open" size={24} color={activeTab === 'FIELD_MANUAL' ? '#4B5320' : ''} />
+                            <span className="text-[10px] font-black uppercase">Manual</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('LOG')} 
