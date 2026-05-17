@@ -144,7 +144,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         
-        window.VANGUARD_DATA = {"logs":[{"id":"1774478172616","date":"2026-03-25","pushups":10,"squats":15,"plankSeconds":20},{"id":"1774989006198","date":"2026-03-31","pushups":15,"squats":40,"plankSeconds":105},{"id":"1774478227501","date":"2026-04-01","pushups":14,"squats":19,"plankSeconds":40},{"id":"1774478320221","date":"2026-04-08","pushups":25,"squats":17,"plankSeconds":30}],"pyramidLogs":[{"week":1,"lastRepRange":4,"totalReps":10},{"week":2,"lastRepRange":5,"totalReps":15},{"week":3,"lastRepRange":8,"totalReps":36},{"week":4,"lastRepRange":8,"totalReps":72},{"week":5,"lastRepRange":2,"totalReps":3},{"week":6,"lastRepRange":1,"totalReps":100},{"week":7,"lastRepRange":10,"totalReps":55}],"completedExercises":{"1-0":true},"week":7,"pyramidIndex":10};
+        window.VANGUARD_DATA = {"logs":[],"pyramidLogs":[],"completedExercises":{},"week":1,"pyramidIndex":0};
 
         // --- Icon Component ---
         const Icon = ({ name, size = 24, className = "", style = {}, color = "" }) => {
@@ -372,25 +372,27 @@ Tips for Beginners:
             const pyramidChartInstance = useRef(null);
 
             useEffect(() => {
-                // Load injected data if available
-                if (window.VANGUARD_DATA) {
+                const savedLogs = localStorage.getItem('blackops_logs');
+                const savedPyramidLogs = localStorage.getItem('blackops_pyramid_logs');
+                const savedCompleted = localStorage.getItem('blackops_completed');
+                const savedWeek = localStorage.getItem('blackops_week');
+                const savedPyramid = localStorage.getItem('blackops_pyramid_index');
+
+                // If any of these exist, it means the user has a local session.
+                // We MUST prioritize it over window.VANGUARD_DATA to ensure deleted data stays deleted.
+                if (savedLogs !== null || savedPyramidLogs !== null || savedCompleted !== null || savedWeek !== null || savedPyramid !== null) {
+                    try { if (savedLogs) setLogs(JSON.parse(savedLogs)); } catch (e) { console.error(e); }
+                    try { if (savedPyramidLogs) setPyramidLogs(JSON.parse(savedPyramidLogs)); } catch (e) { console.error(e); }
+                    try { if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted)); } catch (e) { console.error(e); }
+                    if (savedWeek) setWeek(parseInt(savedWeek));
+                    if (savedPyramid) setPyramidIndex(parseInt(savedPyramid));
+                } else if (window.VANGUARD_DATA) {
                     const { logs: iLogs, pyramidLogs: iPyramidLogs, completedExercises: iCompleted, week: iWeek, pyramidIndex: iPyramid } = window.VANGUARD_DATA;
                     if (iLogs) setLogs(iLogs);
                     if (iPyramidLogs) setPyramidLogs(iPyramidLogs);
                     if (iCompleted) setCompletedExercises(iCompleted);
                     if (iWeek) setWeek(iWeek);
                     if (iPyramid !== undefined) setPyramidIndex(iPyramid);
-                } else {
-                    const savedLogs = localStorage.getItem('blackops_logs');
-                    try { if (savedLogs) setLogs(JSON.parse(savedLogs)); } catch (e) { console.error(e); }
-                    const savedPyramidLogs = localStorage.getItem('blackops_pyramid_logs');
-                    try { if (savedPyramidLogs) setPyramidLogs(JSON.parse(savedPyramidLogs)); } catch (e) { console.error(e); }
-                    const savedCompleted = localStorage.getItem('blackops_completed');
-                    try { if (savedCompleted) setCompletedExercises(JSON.parse(savedCompleted)); } catch (e) { console.error(e); }
-                    const savedWeek = localStorage.getItem('blackops_week');
-                    if (savedWeek) setWeek(parseInt(savedWeek));
-                    const savedPyramid = localStorage.getItem('blackops_pyramid_index');
-                    if (savedPyramid) setPyramidIndex(parseInt(savedPyramid));
                 }
             }, []);
 
@@ -601,8 +603,14 @@ Tips for Beginners:
             };
 
             const clearAllData = () => {
-                setLogs([]); setCompletedExercises({}); setWeek(1); setPyramidIndex(0); setIsPyramidResting(false);
+                setLogs([]); setPyramidLogs([]); setCompletedExercises({}); setWeek(1); setPyramidIndex(0); setIsPyramidResting(false);
                 localStorage.clear();
+                // Ensure localStorage is immediately updated to prevent fallback to VANGUARD_DATA on reload
+                localStorage.setItem('blackops_logs', JSON.stringify([]));
+                localStorage.setItem('blackops_pyramid_logs', JSON.stringify([]));
+                localStorage.setItem('blackops_completed', JSON.stringify({}));
+                localStorage.setItem('blackops_week', "1");
+                localStorage.setItem('blackops_pyramid_index', "0");
                 setShowClearModal(false);
             };
 
